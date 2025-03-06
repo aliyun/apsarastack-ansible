@@ -1,5 +1,5 @@
 - name: Create a new apsarastack VPC resource
-  ali_vpc:
+  alibaba.apsarastack.ali_vpc:
     state: 'present'
     cidr_block: '{{ vpc_cidr }}'
     vpc_name: '{{ name }}'
@@ -7,6 +7,6 @@
   register: vpc
 
 - name: Get the existing vpc
-  ali_vpc_info:
+  alibaba.apsarastack.ali_vpc_info:
     name_prefix: '{{name}}'
   register: vpcs

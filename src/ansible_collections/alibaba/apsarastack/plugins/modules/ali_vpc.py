@@ -21,6 +21,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import time
+
+from ansible.module_utils.basic import AnsibleModule
+
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import vpc_connect
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -193,10 +200,6 @@ vpc:
             sample: [vsw-123cce3, vsw-34cet4v]
 '''
 
-import time
-from ansible.module_utils.basic import AnsibleModule
-from alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from alibaba.apsarastack.plugins.module_utils.apsarastack_connections import vpc_connect
 
 HAS_FOOTMARK = False
 

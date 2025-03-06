@@ -170,8 +170,8 @@ vpcs:
             sample: [vsw-123cce3, vsw-34cet4v]
 '''
 from ansible.module_utils.basic import AnsibleModule
-from alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from alibaba.apsarastack.plugins.module_utils.apsarastack_connections import vpc_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import vpc_connect
 
 HAS_FOOTMARK = False
 
