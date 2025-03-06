@@ -7,9 +7,5 @@ name = "pypi"
 ansible = "*"
 footmark = "*"
 
-[dev-packages]
-pipenv = "*"
-setuptools-git-versioning = "*"
-
 [requires]
 python_version = "3.12"
