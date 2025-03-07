@@ -6,6 +6,9 @@ Created on 2025年3月4日
 '''
 import json
 import os
+import types
+
+from footmark.connection import ACSQueryConnection
 
 try:
     import footmark
@@ -23,6 +26,10 @@ try:
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
+
+APSARASTACK_ENDPOINTS = {
+    "vpc": ("vpc-internal.%(domain)s", "vpc-internal.%(region)s.%(domain)s",)
+    }
 
 
 class AnsibleACSError(Exception):
@@ -95,8 +102,22 @@ def get_profile(params):
     return params
 
 
-def connect_to_acs(acs_module, region, **params):
+def get_endpoint(domain:str, popcode:str, region:str, is_center_region:bool) -> str:
+    index = 0 if is_center_region else 1
+    endpoint_template = APSARASTACK_ENDPOINTS[popcode][index]
+    return endpoint_template % {"domain":domain, "region":region}
+
+
+def connect_to_acs(acs_module, endpoint, region, ** params):
     conn = acs_module.connect_to_region(region, **params)
+    
+    def import_request(self, action):
+        request = ACSQueryConnection.import_request(self, action)
+        request.set_endpoint(endpoint)
+        return request
+    
+    conn.import_request = types.MethodType(import_request, conn)
+    
     if not conn:
         if region not in [acs_module_region.id for acs_module_region in acs_module.regions()]:
             raise AnsibleACSError(
@@ -105,6 +126,7 @@ def connect_to_acs(acs_module, region, **params):
             raise AnsibleACSError(
                 "Unknown problem connecting to region %s for acs module %s." % (region, acs_module.__name__))
     return conn
+
 
 
 def ecs_connect(module):
@@ -125,10 +147,13 @@ def vpc_connect(module):
     """ Return an vpc connection"""
     vpc_params = get_profile(module.params)
     # If we have a region specified, connect to its endpoint.
+    domain = module.params.get('apsarastack_domain')
     region = module.params.get('apsarastack_region')
+    is_center_region = module.params.get('apsarastack_is_center_region')
+    endpoint = get_endpoint(domain, "vpc", region, is_center_region)
     if region:
         try:
-            vpc = connect_to_acs(footmark.vpc, region, **vpc_params)
+            vpc = connect_to_acs(footmark.vpc, endpoint, region, **vpc_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
