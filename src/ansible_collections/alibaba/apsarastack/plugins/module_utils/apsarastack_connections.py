@@ -110,8 +110,9 @@ def get_endpoint(domain:str, popcode:str, region:str, is_center_region:bool) -> 
 
 def connect_to_acs(acs_module, modules_params:dict, **params):
     conn = acs_module.connect_to_region(modules_params['apsarastack_region'], **params)
+    popcode = acs_module.__name__.split('.')[-1]
     endpoint = get_endpoint(
-        modules_params['apsarastack_domain'], "vpc",
+        modules_params['apsarastack_domain'], popcode,
         modules_params['apsarastack_region'], modules_params['apsarastack_is_center_region'])
 
     def import_request(self, action):
