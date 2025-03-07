@@ -6,8 +6,40 @@ Created on 2025年3月7日
 '''
 import io
 import json
-from unittest import mock
+import os
+from pathlib import Path
+import traceback
+from unittest import mock, main
+
 from ansible.module_utils import basic as module_utils_basic
+
+try:
+    import coverage
+
+    def run_unittest_with_coverage():
+        project = str(Path(__file__).parent.parent.resolve())
+        cov = coverage.Coverage(
+            source=[project],  # 指定统计的代码目录
+        )
+        cov.start()
+        
+        try:
+            main()
+        except SystemExit:
+            pass
+        finally:
+            cov.stop()
+            cov.save()
+            
+        # 生成报告
+        if not os.path.exists('htmlcov'):
+            os.mkdir('htmlcov')
+        cov.html_report(directory='htmlcov')
+
+except ImportError:
+
+    def run_unittest_with_coverage(func):
+        func()
 
 
 def run_module(module_main_fuc:callable, modules_args:dict) -> dict:
@@ -25,3 +57,5 @@ def run_module(module_main_fuc:callable, modules_args:dict) -> dict:
         except SystemExit:
             pass
         return json.loads(stdout.getvalue())
+
+

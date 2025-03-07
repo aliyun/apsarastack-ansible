@@ -7,7 +7,7 @@ Created on 2025年3月7日
 import unittest
 
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vpc import main as vpc_main
-from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module
+from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
 from dotenv import load_dotenv
 
 
@@ -24,9 +24,43 @@ class Test(unittest.TestCase):
             "vpc_name": "ansible_test_vpc",
             "description": "create by ansible unit test",
         }
-
         result = run_module(vpc_main, vpc_args)
         self.assertNotIn('failed', result, result.get('msg', ''))
+        self.assertEqual(result['vpc']['vpc_name'], vpc_args['vpc_name'])
+        
+        vpc_args = {
+            "state": "present",
+            "cidr_block": "192.168.0.0/24",
+            "vpc_name": "ansible_test_vpc",
+            "description": "modify by ansible unit test",
+        }
+        result = run_module(vpc_main, vpc_args)
+        self.assertNotIn('failed', result, result.get('msg', ''))
+        self.assertTrue(result['changed'])
+        self.assertEqual(result['vpc']['description'], vpc_args['description'])
+        
+        vpc_args = {
+            "state": "present",
+            "cidr_block": "192.168.0.0/24",
+            "vpc_name": "ansible_test_vpc",
+            "description": "modify by ansible unit test",
+            "tags": {"key1":"value1"}
+        }
+        result = run_module(vpc_main, vpc_args)
+        self.assertNotIn('failed', result, result.get('msg', ''))
+        self.assertTrue(result['changed'])
+        # TODO: 无法读取到tag信息
+        
+        vpc_args = {
+            "state": "present",
+            "cidr_block": "192.168.0.0/24",
+            "vpc_name": "ansible_test_vpc",
+            "description": "modify by ansible unit test",
+            "purge_tags": True
+        }
+        result = run_module(vpc_main, vpc_args)
+        self.assertNotIn('failed', result, result.get('msg', ''))
+        self.assertTrue(result['changed'])
 
         vpc_args = {
             "state": "absent",
@@ -39,4 +73,4 @@ class Test(unittest.TestCase):
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testCreateVpc']
-    unittest.main()
+    run_unittest_with_coverage()
