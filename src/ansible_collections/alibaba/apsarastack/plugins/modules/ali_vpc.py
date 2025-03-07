@@ -25,8 +25,12 @@ import time
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import vpc_connect
+try:
+    from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+    from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import vpc_connect
+except ImportError:
+    from ..module_utils.apsarastack_common import common_argument_spec
+    from ..module_utils.apsarastack_connections import vpc_connect
 
 __metaclass__ = type
 

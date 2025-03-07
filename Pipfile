@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 ansible = "*"
 footmark = "*"
+python-dotenc = "*"
 
 [requires]
 python_version = "3.12"
+
+[dev-packages]
