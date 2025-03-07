@@ -6,7 +6,7 @@ Created on 2025年3月7日
 '''
 import unittest
 
-from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vpc import main
+from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vpc import main as vpc_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module
 from dotenv import load_dotenv
 
@@ -25,8 +25,15 @@ class Test(unittest.TestCase):
             "description": "create by ansible unit test",
         }
 
-        result = run_module(main, vpc_args)
-        self.assertFalse(result['failed'], result['msg'])
+        result = run_module(vpc_main, vpc_args)
+        self.assertNotIn('failed', result, result.get('msg', ''))
+
+        vpc_args = {
+            "state": "absent",
+            "vpc_id": result['vpc']['vpc_id'],
+        }
+        result = run_module(vpc_main, vpc_args)
+        self.assertNotIn('failed', result, result.get('msg', ''))
 
 
 if __name__ == "__main__":

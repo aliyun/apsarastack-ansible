@@ -34,9 +34,15 @@ def common_argument_spec():
             aliases=['is_center_region'],
             fallback=(env_fallback, ['APSARASTACK_IS_CENTER_REGION']), default=True
         ),
-        apsarastack_resourcegroupset=dict(
+        apsarastack_department=dict(
+            required=True, aliases=['department', 'organization', ],
+            fallback=(env_fallback, ['APSARASTACK_DEPARTMENT', 'APSARASTACK_DEPARTMENT_ID',
+                                    'APSARASTACK_ORGANIZATION','APSARASTACK_ORGANIZATION_ID',])
+        ),
+        apsarastack_resourcegroup=dict(
             required=True, aliases=['resourcegroupset', 'resourcegroupset_id', ],
-            fallback=(env_fallback, ['APSARASTACK_RESOURCE_GROUP', 'APSARASTACK_RESOURCE_GROUP_ID', 'APSARASTACK_RESOURCE_GROUP_SET'])
+            fallback=(env_fallback, ['APSARASTACK_RESOURCE_GROUP', 'APSARASTACK_RESOURCE_GROUP_ID',
+                                     'APSARASTACK_RESOURCE_GROUP_SET'])
         ),
         apsarastack_protocol=dict(
             aliases=['protocol'], fallback=(env_fallback, ['APSARASTACK_PROTOCOL']), default='http'
