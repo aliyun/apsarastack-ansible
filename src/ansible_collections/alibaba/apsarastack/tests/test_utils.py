@@ -7,6 +7,7 @@ Created on 2025年3月7日
 import io
 import json
 from unittest import mock
+from ansible.module_utils import basic as module_utils_basic
 
 
 def run_module(module_main_fuc:callable, modules_args:dict) -> dict:
@@ -19,6 +20,7 @@ def run_module(module_main_fuc:callable, modules_args:dict) -> dict:
     
     with mock.patch.multiple("sys", **{"stdin":stdin, "stdout":stdout, "argv":[]}):
         try:
+            module_utils_basic._ANSIBLE_ARGS = None
             module_main_fuc()
         except SystemExit:
             pass

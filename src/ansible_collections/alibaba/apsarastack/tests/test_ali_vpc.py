@@ -30,6 +30,7 @@ class Test(unittest.TestCase):
 
         vpc_args = {
             "state": "absent",
+            "cidr_block": "192.168.0.0/24",
             "vpc_id": result['vpc']['vpc_id'],
         }
         result = run_module(vpc_main, vpc_args)
