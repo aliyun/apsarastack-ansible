@@ -8,7 +8,6 @@ import io
 import json
 import os
 from pathlib import Path
-import traceback
 from unittest import mock, main
 
 from ansible.module_utils import basic as module_utils_basic
@@ -38,8 +37,8 @@ try:
 
 except ImportError:
 
-    def run_unittest_with_coverage(func):
-        func()
+    def run_unittest_with_coverage():
+        main()
 
 
 def run_module(module_main_fuc:callable, modules_args:dict) -> dict:
