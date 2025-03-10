@@ -112,6 +112,7 @@ requirements:
 extends_documentation_fragment:
     - apsarastack
 author:
+    - "Wang Yu (@zshongyi)
     - "He Guimin (@xiaozhu36)"
 """
 

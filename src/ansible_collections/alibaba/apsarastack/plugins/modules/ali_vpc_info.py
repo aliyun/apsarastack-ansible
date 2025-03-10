@@ -66,6 +66,7 @@ options:
       - A hash/dictionaries of vpc tags. C({"key":"value"})
     type: dict
 author:
+    - "Wang Yu (@zshongyi)
     - "He Guimin (@xiaozhu36)"
 requirements:
     - "python >= 3.6"
@@ -138,11 +139,6 @@ vpcs:
             returned: always
             type: str
             sample: available
-        tags:
-            description: tags attached to the VPC, includes name.
-            returned: always
-            type: dict
-            sample:
         user_cidrs:
             description: The custom CIDR of the VPC.
             returned: always
@@ -190,7 +186,6 @@ def main():
         name_prefix=dict(type='str'),
         cidr_prefix=dict(type='str'),
         filters=dict(type='dict'),
-        tags=dict(type='dict')
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -212,7 +207,6 @@ def main():
     name = module.params['vpc_name']
     name_prefix = module.params['name_prefix']
     cidr_prefix = module.params['cidr_prefix']
-    tags = module.params['tags']
 
     try:
         vpcs = []
@@ -228,13 +222,6 @@ def main():
                     continue
                 if cidr_prefix and not str(vpc.cidr_block).startswith(cidr_prefix):
                     continue
-                if tags:
-                    flag = False
-                    for key, value in list(tags.items()):
-                        if key in list(vpc.tags.keys()) and value == vpc.tags[key]:
-                            flag = True
-                    if not flag:
-                        continue
                 vpcs.append(vpc.read())
                 ids.append(vpc.id)
             if not vpc_ids:
