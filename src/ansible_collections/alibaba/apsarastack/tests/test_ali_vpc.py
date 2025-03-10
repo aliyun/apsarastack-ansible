@@ -6,9 +6,10 @@ Created on 2025年3月7日
 '''
 import unittest
 
+from dotenv import load_dotenv
+
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vpc import main as vpc_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
-from dotenv import load_dotenv
 
 
 class Test(unittest.TestCase):
@@ -18,6 +19,16 @@ class Test(unittest.TestCase):
         load_dotenv()
 
     def testCreateVpc(self):
+        vpc_args = {
+            "state": "absent",
+            "cidr_block": "192.168.0.0/24",
+            "vpc_id": 'not_exist_test',
+        }
+        result = run_module(vpc_main, vpc_args)
+        self.assertNotIn('failed', result)
+        self.assertEqual(result['changed'], False)
+        self.assertEqual(result['vpc'], {})
+        
         vpc_args = {
             "state": "present",
             "cidr_block": "192.168.0.0/24",
@@ -69,6 +80,24 @@ class Test(unittest.TestCase):
         }
         result = run_module(vpc_main, vpc_args)
         self.assertNotIn('failed', result, result.get('msg', ''))
+
+        vpc_args = {
+            "cidr_block": "192.168.0.0/24",
+            "vpc_name": "http://ansible_test_vpc",
+            "description": "modify by ansible unit test",
+        }
+        result = run_module(vpc_main, vpc_args)
+        self.assertIn('failed', result)
+        self.assertEqual(result['msg'], 'vpc_name can not start with http:// or https://')
+        
+        vpc_args = {
+            "cidr_block": "192.168.0.0/24",
+            "vpc_name": "ansible_test_vpc",
+            "description": "http://modify by ansible unit test",
+        }
+        result = run_module(vpc_main, vpc_args)
+        self.assertIn('failed', result)
+        self.assertEqual(result['msg'], 'description can not start with http:// or https://')
 
 
 if __name__ == "__main__":
