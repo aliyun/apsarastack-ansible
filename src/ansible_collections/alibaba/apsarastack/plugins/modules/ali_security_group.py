@@ -399,7 +399,6 @@ def main():
             params['security_group_name'] = group_name
             params['client_token'] = "Ansible-Apsarastack-%s-%s" % (hash(str(module.params)), str(time.time()))
             group = ecs.create_security_group(**params)
-            changed = True
         except ECSResponseError as e:
             module.fail_json(changed=changed, msg='Creating a security group is failed. Error: {0}'.format(e))
 
