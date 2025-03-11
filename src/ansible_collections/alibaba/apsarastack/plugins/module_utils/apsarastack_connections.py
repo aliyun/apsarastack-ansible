@@ -28,7 +28,8 @@ except ImportError:
     HAS_FOOTMARK = False
 
 APSARASTACK_ENDPOINTS = {
-    "vpc": ("vpc-internal.%(domain)s", "vpc-internal.%(region)s.%(domain)s",)
+    "vpc": ("vpc-internal.%(domain)s", "vpc-internal.%(region)s.%(domain)s",),
+    "ecs": ("ecs-internal.%(domain)s", "ecs-internal.%(region)s.%(domain)s",)
     }
 
 
@@ -139,7 +140,7 @@ def ecs_connect(module):
     region = module.params.get('apsarastack_region')
     if region:
         try:
-            ecs = connect_to_acs(footmark.ecs, region, **ecs_params)
+            ecs = connect_to_acs(footmark.ecs, module.params, **ecs_params)
         except AnsibleACSError as e:
             module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
