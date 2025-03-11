@@ -35,6 +35,16 @@ class Test(unittest.TestCase):
         result = run_module(vpc_main, vpc_args)
         self._vpc_info['id'] = result['vpc']['vpc_id']
 
+    def tearDown(self) -> None:
+        unittest.TestCase.tearDown(self)
+        vpc_args = {
+            "state": "absent",
+        } | self._vpc_info
+        try:
+            run_module(vpc_main, vpc_args)
+        except:
+            pass
+
     def testCreateSecurityGroup(self):
         security_group_args = {
             "state": "absent",
