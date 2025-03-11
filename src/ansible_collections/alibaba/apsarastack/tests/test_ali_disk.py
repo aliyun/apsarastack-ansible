@@ -23,7 +23,6 @@ class Test(unittest.TestCase):
             "size": "30",
             "disk_name": "New-diskv2",
             "description": "new_disk",
-            "apsarastack_zone": "cn-wulan-env212-amtest212001-a",
         }
         result = run_module(disk_main, disk_args)
         self.assertNotIn('failed', result, result.get('msg', ''))
@@ -50,15 +49,6 @@ class Test(unittest.TestCase):
         result = run_module(disk_main, disk_args)
         print(result)
         self.assertEqual(result.get('msg'), 'Please use disk_id or disk_name to specify one disk for detaching or deleting.')
-
-        # disk_args = {
-        #     "disk_id": disk_id,
-        #     "state": "absent",
-        #     "instance_id": "i-ob6012bfzb2b0p99gpel",
-        # }
-        # result = run_module(disk_main, disk_args)
-        # self.assertNotIn('failed', result, result.get('msg', ''))
-
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testCreateVpc']

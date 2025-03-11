@@ -205,7 +205,7 @@ import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ecs_connect
-
+from ansible.module_utils.basic import env_fallback
 HAS_FOOTMARK = False
 
 try:
@@ -244,7 +244,8 @@ def main():
     argument_spec = common_argument_spec()
     argument_spec.update(dict(
         resource_group_id=dict(type='str', aliases=['group_id']),
-        apsarastack_zone=dict(type='str', aliases=['zone_id', 'zone']),
+        zone_id=dict(type='str', aliases=['availability_zone', 'apsarastack_zone'],
+                     fallback=(env_fallback, ['APSARASTACK_ZONE', 'APSARASTACK_ZONE_ID'])),
         state=dict(type='str', default='present', choices=['present', 'absent']),
         disk_id=dict(type='str', aliases=['vol_id', 'id']),
         disk_name=dict(type='str', aliases=['name']),
@@ -267,7 +268,7 @@ def main():
 
     instance_id = module.params['instance_id']
     disk_id = module.params['disk_id']
-    zone_id = module.params['apsarastack_zone']
+    zone_id = module.params['zone_id']
     disk_name = module.params['disk_name']
     delete_with_instance = module.params['delete_with_instance']
     description = module.params['description']
