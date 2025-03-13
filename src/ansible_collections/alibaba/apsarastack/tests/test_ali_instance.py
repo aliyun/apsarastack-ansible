@@ -6,8 +6,6 @@ Created on 2025年3月7日
 '''
 import uuid
 import unittest
-# import sys
-# sys.path.append(r"D:\code\ansible-module-apsarastack\src")
 
 from dotenv import load_dotenv
 
@@ -40,7 +38,6 @@ class Test(unittest.TestCase):
         unittest.TestCase.setUp(self)
         load_dotenv()
         result = run_module(vpc_main, self._vpc_args)
-        # import pdb;pdb.set_trace()
         self._vpc_args['id'] = result['vpc']['vpc_id']
         self._vswtich_args["vpc_id"] = result['vpc']['vpc_id']
         self._security_group_args["vpc_id"] = result['vpc']['vpc_id']
@@ -73,13 +70,19 @@ class Test(unittest.TestCase):
 
     def testCreateEcsInstance(self):
         ecs_instance_args = {
-        "image": "arm_centos_7_6_20G_20211110.raw",
-        "instance_type": "ecs.g6x-ft-k10-c1m1.large",
-        "instance_name": "ansible_test_ecs_instance_test",
+        "state": 'present',
+        "image": "ubuntu_18_04_x64_20G_alibase_20220322.vhd",
+        "instance_type": "ecs.s6-hg-k-c1m1.large",
+        "instance_name": "ld_test_0313",
         "vswitch_id": self._vswtich_args["id"],
-        "host_name": "ansible_test_ecs_instance_test",
+        # "host_name": "ld_test_0313",
         "password": "Ld123@123",
-        "count_tag": "test_0312",
+        "count_tag": '{"test": "test"}',
+        "tags": {
+            "test": "test"
+        },
+        "count": 1,
+        # "count_tag": "test_0312",
         "system_disk_name": "ansible_test_ecs_instance_test",
         "system_disk_category": "cloud_ssd",
         "system_disk_size": "20",
@@ -89,7 +92,7 @@ class Test(unittest.TestCase):
         result = run_module(instance_main, ecs_instance_args)
         self.assertNotIn('failed', result)
         self.assertEqual(result['changed'], False)
-        self.assertEqual(result['instances'][0]["hostname"], ecs_instance_args["host_name"])
+        self.assertEqual(result['instances'][0]["instance_name"], ecs_instance_args["instance_name"])
 
         ecs_instance_args = {
             "state": "absent",
@@ -98,15 +101,6 @@ class Test(unittest.TestCase):
         result = run_module(instance_main, ecs_instance_args)
         self.assertNotIn('failed', result, result.get('msg', ''))
         
-        # vpc_args = {
-        #     "state": "present",
-        #     "cidr_block": "192.168.0.0/24",
-        #     "vpc_name": "ansible_test_vpc",
-        #     "description": "create by ansible unit test",
-        # }
-        # result = run_module(vpc_main, vpc_args)
-        # self.assertNotIn('failed', result, result.get('msg', ''))
-        # self.assertEqual(result['vpc']['vpc_name'], vpc_args['vpc_name'])
         
         
 
