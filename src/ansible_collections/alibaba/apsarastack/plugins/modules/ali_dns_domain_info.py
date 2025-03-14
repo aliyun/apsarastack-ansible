@@ -20,6 +20,10 @@
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
 from __future__ import (absolute_import, division, print_function)
+from ansible_collections.alibaba.apsarastack.plugins.modules.ali_dns_domain import dns_exists_v2
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import dns_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -135,10 +139,6 @@ dns:
 '''
 
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import dns_connect
-
 HAS_FOOTMARK = False
 
 try:
@@ -156,6 +156,7 @@ def main():
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
+    dns_conn = dns_connect(module)
 
     if HAS_FOOTMARK is False:
         module.fail_json(msg="Package 'footmark' required for this module.")
@@ -165,15 +166,11 @@ def main():
         filters = {}
     domain_name = module.params['domain_name']
     try:
-        dns = []
-        names = []
-        for _dns in dns_connect(module).describe_domains(**filters):
-            if domain_name and _dns.domain_name != domain_name:
-                continue
-            dns.append(_dns.read())
-            names.append(_dns.domain_name)
-
-        module.exit_json(changed=False, names=names, dns=dns)
+        dns = dns_exists_v2(module, dns_conn, domain_name)
+        if dns:
+            module.exit_json(changed=False, names=domain_name, dns=dns)
+        else:
+            module.fail_json(msg=str("Unable to get dns"))
     except Exception as e:
         module.fail_json(msg=str("Unable to get dns, error:{0}".format(e)))
 

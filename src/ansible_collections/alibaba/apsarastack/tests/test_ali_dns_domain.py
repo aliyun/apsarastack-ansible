@@ -21,23 +21,30 @@ class Test(unittest.TestCase):
 
     def testCreateDnsDomain(self):
         dnsdomain_args = {
-            "domain_name": "zhangyantest123.dev.ali.cloud.cn.hsbc.",
-            "remark": "testing Domain"
+            "domain_name": "zhangyantest123.dev.ali.cloud.cn.hsbcv6."
 
         }
         result = run_module(dns_domain_main, dnsdomain_args)
         self.assertNotIn('failed', result)
         self.assertEqual(result['changed'], False)
-        self.assertEqual(result['name'], dnsdomain_args["domain_name"])
+        self.assertEqual(result["dns"]["Name"], dnsdomain_args["domain_name"])
+
+        dnsdomain_args = {
+            "remark": "remark_test",
+            "domain_name": "zhangyantest123.dev.ali.cloud.cn.hsbcv6."
+        }
+        result = run_module(dns_domain_main, dnsdomain_args)
+        self.assertNotIn('failed', result)
+        self.assertEqual(result['changed'], True)
+        self.assertEqual(result["dns"]["Remark"], dnsdomain_args["remark"])
 
         dnsdomain_args = {
             "state": "absent",
-            "domain_id": result["id"],
+            "domain_name": result["dns"]["Name"],
         }
-        result = run_module(dnsdomain_args, dnsdomain_args)
+        result = run_module(dns_domain_main, dnsdomain_args)
         self.assertNotIn('failed', result, result.get('msg', ''))
-        
-        
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testCreateVpc']

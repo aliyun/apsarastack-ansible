@@ -154,7 +154,7 @@ def do_common_request(conn, method:str, popcode: str, version:str, api_name:str,
     request.set_version(version)
     request.set_action_name(api_name)
     if pattern:
-        request.setSysUriPattern(pattern);
+        request.setSysUriPattern(pattern)
     # 云产品的Endpoint地址
     request.set_domain(conn._endpoint)
     # 设置请求方式
@@ -182,7 +182,8 @@ def do_common_request(conn, method:str, popcode: str, version:str, api_name:str,
         request.set_query_params(query)
 
     if body:
-        request.set_content_type('application/json')
+        request.set_content_type('application/x-www-form-urlencoded')
+        
         request.set_body_params(body)
     
     response = client.do_action_with_exception(request)

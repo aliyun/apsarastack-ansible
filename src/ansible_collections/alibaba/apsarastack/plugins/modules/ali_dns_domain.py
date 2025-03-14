@@ -20,6 +20,10 @@
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
 from __future__ import (absolute_import, division, print_function)
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import dns_connect, do_common_request
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+from ansible.module_utils.basic import AnsibleModule
+import time
 
 __metaclass__ = type
 
@@ -171,11 +175,6 @@ dns:
             type: str
             sample: Alibaba Cloud DNS
 '''
-
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import dns_connect
-
 HAS_FOOTMARK = False
 
 try:
@@ -183,6 +182,88 @@ try:
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
+
+
+def dns_exists_v2(module, dns_conn, domain_name=None, domain_id=None):
+    if not domain_name and not domain_id:
+        return False
+    try:
+        i = 1
+        params = {
+            "PageNumber": i,
+            "PageSize": 10,
+        }
+        response = do_common_request(
+            dns_conn, "POST", "CloudDns", "2021-06-24", "DescribeGlobalZones", body=params)
+        for domain in response["Data"]:
+            if domain_name:
+                if domain["Name"] == domain_name:
+                    return domain
+            else:
+                if domain["Id"] == domain_id:
+                    return domain
+        while response["Data"] and (i-1) * params["PageSize"] + len(response["Data"]) < response["TotalItems"]:
+            i += 1
+            params = {
+                "PageNumber": i,
+                "PageSize": 10,
+            }
+            response = do_common_request(
+                dns_conn, "POST", "CloudDns", "2021-06-24", "DescribeGlobalZones", body=params)
+            for domain in response["Data"]:
+                if domain_name:
+                    if domain["Name"] == domain_name:
+                        return domain
+                else:
+                    if domain["Id"] == domain_id:
+                        return domain
+    except Exception as e:
+        module.fail_json(msg="Failed to dns_exists_v2: {0}".format(e))
+
+
+def describe_dns(module, dns_conn, dns_id):
+    return dns_exists_v2(module, dns_conn, domain_id=dns_id)
+
+
+def add_domains_v2(module, dns_conn, params):
+    try:
+        response = do_common_request(
+            dns_conn, "POST", "CloudDns", "2021-06-24", "AddGlobalZone", body=params)
+        if response["asapiSuccess"]:
+            domain_id = response["Id"]
+            return describe_dns(module, dns_conn, domain_id)
+    except Exception as e:
+        module.fail_json(
+            msg="Failed to add_domains_v2: %s  params: %s" % (e, params))
+
+
+def dns_delete_v2(module, dns_conn, dns_id):
+    params = {
+        "Id": dns_id
+    }
+    try:
+        response = do_common_request(
+            dns_conn, "POST", "CloudDns", "2021-06-24", "DeleteGlobalZone", body=params)
+        if response["asapiSuccess"]:
+            return True
+    except Exception as e:
+        module.fail_json(msg="Failed to dns_delete_v2: {0}".format(e))
+
+
+def modify_remark_v2(module, dns_conn, dns_name, dns_remark):
+    dns = dns_exists_v2(module, dns_conn, dns_name)
+    params = {
+        "Id": dns["Id"],
+        "Name": dns_name,
+        "Remark": dns_remark
+    }
+    try:
+        do_common_request(dns_conn, "POST", "CloudDns",
+                          "2021-06-24", "UpdateGlobalZoneRemark", body=params)
+        return describe_dns(module, dns_conn, dns["Id"])
+    except Exception as e:
+        module.fail_json(msg="Failed to modify_remark_v2: {0}".format(e))
+
 
 def dns_exists(module, dns_conn, domain_name):
     """Returns None or a vpc object depending on the existence of a VPC. When supplied
@@ -216,7 +297,8 @@ def main():
     module = AnsibleModule(argument_spec=argument_spec)
 
     if HAS_FOOTMARK is False:
-        module.fail_json(msg='footmark required for the module ali_dns_domain.')
+        module.fail_json(
+            msg='footmark required for the module ali_dns_domain.')
 
     dns_conn = dns_connect(module)
 
@@ -228,41 +310,47 @@ def main():
     changed = False
 
     # Check if VPC exists
-    dns = dns_exists(module, dns_conn, domain_name)
+    dns = dns_exists_v2(module, dns_conn, domain_name)
 
     if state == 'absent':
         if not dns:
             module.exit_json(changed=changed, dns={})
         try:
-            module.exit_json(changed=dns.delete(), dns={})
+            dns_id = dns["Id"]
+            dns_delete_v2(module, dns_conn, dns_id)
+            module.exit_json(changed=True, dns={})
         except DNSResponseError as ex:
-            module.fail_json(msg='Unable to delete dns {0}, error: {1}'.format(dns.id, ex))
+            module.fail_json(
+                msg='Unable to delete dns {0}, error: {1}'.format(dns.id, ex))
 
     if not dns:
         params = module.params
+        params_add = {"Name": params["domain_name"]}
         try:
-            dns = dns_conn.add_domain(**params)
+            dns = add_domains_v2(module, dns_conn, params_add)
             if dns:
-                changed = True
+                changed = False
         except DNSResponseError as e:
             module.fail_json(msg='Unable to create dns, error: {0}'.format(e))
 
-    if domain_name and group_name:
-        try:
-            res = dns.change_domain_group(group_name=group_name, domain_name=domain_name)
-            if res:
-                changed = True
-        except DNSResponseError as e:
-            module.fail_json(msg='Unable to change domain group, error: {0}'.format(e))
+    # if domain_name and group_name:
+    #     try:
+    #         res = dns.change_domain_group(group_name=group_name, domain_name=domain_name)
+    #         if res:
+    #             changed = True
+    #     except DNSResponseError as e:
+    #         module.fail_json(msg='Unable to change domain group, error: {0}'.format(e))
 
     if remark:
         try:
-            res = dns.modify_remark(remark=remark)
-            if res:
+            dns = modify_remark_v2(
+                module, dns_conn, module.params["domain_name"], remark)
+            if dns:
                 changed = True
         except DNSResponseError as e:
-            module.fail_json(msg='Unable to modify dns remark, error: {0}'.format(e))
-    module.exit_json(changed=changed, dns=dns.get().read())
+            module.fail_json(
+                msg='Unable to modify dns remark, error: {0}'.format(e))
+    module.exit_json(changed=changed, dns=dns)
 
 
 if __name__ == '__main__':
