@@ -8,7 +8,12 @@ import json
 import os
 import types
 
+from aliyunsdkcore.auth.credentials import AccessKeyCredential,\
+    StsTokenCredential
+from aliyunsdkcore.client import AcsClient
+from aliyunsdkcore.request import CommonRequest
 from footmark.connection import ACSQueryConnection
+
 
 try:
     import footmark
@@ -109,29 +114,80 @@ def get_endpoint(domain:str, popcode:str, region:str, is_center_region:bool) -> 
     endpoint_template = APSARASTACK_ENDPOINTS[popcode][index]
     return endpoint_template % {"domain":domain, "region":region}
 
-
 def connect_to_acs(acs_module, modules_params:dict, **params):
     conn = acs_module.connect_to_region(modules_params['apsarastack_region'], **params)
     popcode = acs_module.__name__.split('.')[-1]
-    endpoint = get_endpoint(
+    conn._endpoint = get_endpoint(
         modules_params['apsarastack_domain'], popcode,
-        modules_params['apsarastack_region'], modules_params['apsarastack_is_center_region'])
+        modules_params['apsarastack_region'], modules_params['apsarastack_is_center_region']
+    )
+    conn._default_headers = {
+        "x-acs-organizationid": modules_params['apsarastack_department'],
+        "x-acs-resourcegroupid": modules_params['apsarastack_resourcegroup'],
+        "x-acs-regionid": modules_params['apsarastack_region'],
+        "x-acs-request-version": "v1",
+    }
 
     def import_request(self, action):
         request = ACSQueryConnection.import_request(self, action)
-        request.set_endpoint(endpoint)
-        request.set_headers({
-            "x-acs-organizationid": modules_params['apsarastack_department'],
-            "x-acs-resourcegroupid": modules_params['apsarastack_resourcegroup'],
-            "x-acs-regionid": modules_params['apsarastack_region'],
-            "x-acs-request-version": "v1",
-        })
+        request.set_endpoint(conn._endpoint)
+        request.set_headers(conn._default_headers)
         return request
     
     conn.import_request = types.MethodType(import_request, conn)
 
     return conn
 
+
+def do_common_request(conn, method:str, popcode: str, version:str, api_name:str, pattern:str="", headers:dict={}, query:dict={}, body:dict=None) -> dict:
+    
+    if not conn.security_token: 
+        credentials = AccessKeyCredential(conn.acs_access_key_id, conn.acs_secret_access_key)
+    else:
+        credentials = StsTokenCredential(conn.acs_access_key_id, conn.acs_secret_access_key, conn.security_token)
+    # 创建AcsClient连接,timeout设置请求超时时间(单位：ms)
+    client = AcsClient(region_id=conn.region, credential=credentials, timeout=10000)
+    # 创建API请求
+    request = CommonRequest()
+    # 产品接口信息参数
+    request.set_product(popcode)
+    request.set_version(version)
+    request.set_action_name(api_name)
+    if pattern:
+        request.setSysUriPattern(pattern);
+    # 云产品的Endpoint地址
+    request.set_domain(conn._endpoint)
+    # 设置请求方式
+    request.set_method(method)
+    # 设置请求协议类型
+    request.set_protocol_type('http')
+    
+    # 阿里云核心库SDK发起API请求时，可以设置四种类型参数（Path/Query/Body/Header）
+    # Path参数用于对请求Request中设置的UriPattern进行变量替换
+    # Query参数用于对请求Request中的URL参数进行设置（一般用于GET请求）
+    # Body参数用于对请求Request中的HTTP Content进行设置（一般用于POST/PUT请求），在设置Body参数时，需要同时设置HTTP Content-Type，目前支持JSON和FORM两种格式
+    # Header参数用于对请求Request中的HTTP Header进行设置
+    
+    # 设置Headers
+    # 设置身份标识,标识调用来源,无实际作用,可随意设置,必填项
+    for k, v in conn._default_headers.items():
+        request.add_header(k ,v)
+    for k, v in headers.items():
+        request.add_header(k ,v)
+
+    request.add_header("x-acs-caller-sdk-source", conn.user_agent)
+    request.set_user_agent(conn.user_agent)
+    
+    if query:
+        request.set_query_params(query)
+
+    if body:
+        request.set_content_type('application/json')
+        request.set_body_params(body)
+    
+    response = client.do_action_with_exception(request)
+    
+    return json.loads(response)
 
 
 def ecs_connect(module):

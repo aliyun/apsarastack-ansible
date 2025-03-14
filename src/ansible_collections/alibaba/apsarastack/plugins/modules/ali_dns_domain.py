@@ -184,7 +184,6 @@ try:
 except ImportError:
     HAS_FOOTMARK = False
 
-
 def dns_exists(module, dns_conn, domain_name):
     """Returns None or a vpc object depending on the existence of a VPC. When supplied
     with a CIDR and Name, it will check them to determine if it is a match
