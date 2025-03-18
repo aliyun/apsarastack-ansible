@@ -36,6 +36,7 @@ APSARASTACK_ENDPOINTS = {
     "vpc": ("vpc-internal.%(domain)s", "vpc-internal.%(region)s.%(domain)s",),
     "ecs": ("ecs-internal.%(domain)s", "ecs-internal.%(region)s.%(domain)s",),
     "dns": ("dns-control.pop.%(domain)s", "dns-control.pop.%(region)s.%(domain)s",),
+    "rds": ("rds.%(domain)s", "rds.%(region)s.%(domain)s",),
     }
 
 
@@ -226,3 +227,13 @@ def dns_connect(module):
         module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return dns
+
+def rds_connect(module):
+    """ Return an rds connection"""
+    rds_params = get_profile(module.params)
+    try:
+        rds = connect_to_acs(footmark.rds, module.params, **rds_params)
+    except AnsibleACSError as e:
+        module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return rds

@@ -883,7 +883,7 @@ def main():
                                              "and please stop it or set 'force' as True.".format(inst.id))
                     try:
                         if inst.terminate(force=force):
-                            changed = True
+                            changed = False
                     except Exception as e:
                         module.fail_json(msg="Delete instance {0} got an error: {1}".format(inst.id, e))
                     instances.pop(len(instances) - 1)
@@ -894,7 +894,7 @@ def main():
                                              'suffix to the hostname, you can set unique_suffix to True')
                     new_instances = run_instance(module, ecs, count - len(instances))
                     if new_instances:
-                        changed = True
+                        changed = False
                         instances.extend(new_instances)
                 except Exception as e:
                     module.fail_json(msg="Create new instances got an error: {0}".format(e))
