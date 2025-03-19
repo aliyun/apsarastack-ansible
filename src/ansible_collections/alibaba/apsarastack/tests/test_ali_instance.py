@@ -6,6 +6,8 @@ Created on 2025年3月7日
 '''
 import uuid
 import unittest
+import sys
+import time
 
 from dotenv import load_dotenv
 
@@ -72,7 +74,7 @@ class Test(unittest.TestCase):
         ecs_instance_args = {
         "state": 'present',
         "image": "ubuntu_24_04_x86_64_20G_alibase_20241115.vhd",
-        "instance_type": "ecs.xn4.small",
+        "instance_type": "ecs.xn4v2.small",
         "instance_name": self.name,
         "vswitch_id": self._vswtich_args["id"],
         "password": "Ld123@123",
@@ -99,18 +101,47 @@ class Test(unittest.TestCase):
         ecs_instance_args = {
             "state": "stopped",
             "force": True,
+            "user_data": "ansible_test",
             "instance_ids": [instance_id]
         }
         result = run_module(instance_main, ecs_instance_args)
-        # self.assertNotIn('failed', result, result.get('msg', ''))
 
+        ecs_instance_args = {
+            "state": "running",
+            "force": True,
+            "instance_ids": [instance_id]
+        }
+        result = run_module(instance_main, ecs_instance_args)
+        self.assertNotIn('failed', result, result.get('msg', ''))
+
+        ecs_instance_args = {
+            "state": "restarted",
+            "force": True,
+            "instance_ids": [instance_id]
+        }
+        result = run_module(instance_main, ecs_instance_args)
+        self.assertNotIn('failed', result, result.get('msg', ''))
+
+        ecs_instance_args = {
+            "state": "stopped",
+            "force": True,
+            "user_data": "ansible_test",
+            "instance_ids": [instance_id]
+        }
+        result = run_module(instance_main, ecs_instance_args)
+        self.assertNotIn('failed', result, result.get('msg', ''))
+        
         ecs_instance_args = {
             "state": "absent",
             "force": True,
             "instance_ids": [instance_id]
         }
-        result = run_module(instance_main, ecs_instance_args)
-        # self.assertNotIn('failed', result, result.get('msg', ''))
+        for _ in range(12):
+            result = run_module(instance_main, ecs_instance_args)
+            if "failed" not in result:
+                break
+            time.sleep(5)
+        self.assertNotIn('failed', result, result.get('msg', ''))
         
         
         

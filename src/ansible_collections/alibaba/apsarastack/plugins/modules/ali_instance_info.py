@@ -356,7 +356,8 @@ ids:
 
 import traceback
 from ansible.module_utils.basic import AnsibleModule, missing_required_lib
-from ansible.module_utils.apsarastack_ecs import ecs_argument_spec, ecs_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ecs_connect
 
 HAS_FOOTMARK = False
 FOOTMARK_IMP_ERR = None
@@ -369,7 +370,7 @@ except ImportError:
 
 
 def main():
-    argument_spec = ecs_argument_spec()
+    argument_spec = common_argument_spec()
     argument_spec.update(dict(
         availability_zone=dict(aliases=['apsarastack_zone']),
         instance_ids=dict(type='list', elements='str', aliases=['ids']),
