@@ -19,7 +19,6 @@ from ansible_collections.alibaba.apsarastack.plugins.modules.ali_security_group 
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_instance import main as instance_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_instance_info import main as instance_info_main
 
-
 class Test(unittest.TestCase):
 
     def __init__(self, methodName:str="runTest") -> None:

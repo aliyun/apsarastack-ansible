@@ -37,6 +37,7 @@ APSARASTACK_ENDPOINTS = {
     "ecs": ("ecs-internal.%(domain)s", "ecs-internal.%(region)s.%(domain)s",),
     "dns": ("dns-control.pop.%(domain)s", "dns-control.pop.%(region)s.%(domain)s",),
     "rds": ("rds.%(domain)s", "rds.%(region)s.%(domain)s",),
+    "slb": ("slb-vpc.%(domain)s", "slb-vpc.%(region)s.%(domain)s",),
     }
 
 
@@ -237,3 +238,14 @@ def rds_connect(module):
         module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return rds
+
+
+def slb_connect(module):
+    """ Return an slb connection"""
+    slb_params = get_profile(module.params)
+    try:
+        slb = connect_to_acs(footmark.slb, module.params, **slb_params)
+    except AnsibleACSError as e:
+        module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return slb
