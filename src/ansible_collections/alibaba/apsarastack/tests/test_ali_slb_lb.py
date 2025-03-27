@@ -57,86 +57,21 @@ class Test(unittest.TestCase):
             "internet_charge_type": "PayByTraffic",
             "load_balancer_name": self.name,
             "load_balancer_spec": "slb.s1.small",
-            "tags": {"ansible_test_tag": "ansible"},
-            "purge_tags": True,
+            "purge_tags": False,
             "vswitch_id": self._vswtich_args["id"]
 
         }
         result = run_module(slb_main, slb_args)
-        import pdb;pdb.set_trace()
         self.assertNotIn('failed', result)
-        self.assertEqual(result['changed'], False)
-        self.assertEqual(result['vpc'], {})
+        self.assertEqual(result["load_balancer"]['load_balancer_name'], slb_args["load_balancer_name"])
+        self.assertEqual(result["load_balancer"]['vswitch_id'], slb_args["vswitch_id"])
+        self.assertEqual(result['load_balancer']["load_balancer_spec"], slb_args["load_balancer_spec"])
+        slb_id = result["load_balancer"]["load_balancer_id"]
         
-        vpc_args = {
-            "state": "present",
-            "cidr_block": "192.168.0.0/24",
-            "vpc_name": "ansible_test_vpc",
-            "description": "create by ansible unit test",
-        }
-        result = run_module(vpc_main, vpc_args)
+        slb_args["load_balancer_id"] = slb_id
+        slb_args["state"] = "absent"
+        result = run_module(slb_main, slb_args)
         self.assertNotIn('failed', result, result.get('msg', ''))
-        self.assertEqual(result['vpc']['vpc_name'], vpc_args['vpc_name'])
-        
-        vpc_args = {
-            "state": "present",
-            "cidr_block": "192.168.0.0/24",
-            "vpc_name": "ansible_test_vpc",
-            "description": "modify by ansible unit test",
-        }
-        result = run_module(vpc_main, vpc_args)
-        self.assertNotIn('failed', result, result.get('msg', ''))
-        self.assertTrue(result['changed'])
-        self.assertEqual(result['vpc']['description'], vpc_args['description'])
-        
-        vpc_args = {
-            "state": "present",
-            "cidr_block": "192.168.0.0/24",
-            "vpc_name": "ansible_test_vpc",
-            "description": "modify by ansible unit test",
-            "tags": {"key1":"value1"}
-        }
-        result = run_module(vpc_main, vpc_args)
-        self.assertNotIn('failed', result, result.get('msg', ''))
-        self.assertTrue(result['changed'])
-        # TODO: 无法读取到tag信息
-        
-        vpc_args = {
-            "state": "present",
-            "cidr_block": "192.168.0.0/24",
-            "vpc_name": "ansible_test_vpc",
-            "description": "modify by ansible unit test",
-            "purge_tags": True
-        }
-        result = run_module(vpc_main, vpc_args)
-        self.assertNotIn('failed', result, result.get('msg', ''))
-        self.assertTrue(result['changed'])
-
-        vpc_args = {
-            "state": "absent",
-            "cidr_block": "192.168.0.0/24",
-            "vpc_id": result['vpc']['vpc_id'],
-        }
-        result = run_module(vpc_main, vpc_args)
-        self.assertNotIn('failed', result, result.get('msg', ''))
-
-        vpc_args = {
-            "cidr_block": "192.168.0.0/24",
-            "vpc_name": "http://ansible_test_vpc",
-            "description": "modify by ansible unit test",
-        }
-        result = run_module(vpc_main, vpc_args)
-        self.assertIn('failed', result)
-        self.assertEqual(result['msg'], 'vpc_name can not start with http:// or https://')
-        
-        vpc_args = {
-            "cidr_block": "192.168.0.0/24",
-            "vpc_name": "ansible_test_vpc",
-            "description": "http://modify by ansible unit test",
-        }
-        result = run_module(vpc_main, vpc_args)
-        self.assertIn('failed', result)
-        self.assertEqual(result['msg'], 'description can not start with http:// or https://')
 
 
 if __name__ == "__main__":

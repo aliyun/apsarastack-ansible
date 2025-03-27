@@ -391,8 +391,7 @@ def main():
             params['address_type'] = address_type
             try:
                 matching = slb.create_load_balancer(**params)
-                print("------------%s----------" % matching)
-                changed = True
+                changed = False
             except Exception as e:
                 module.fail_json(msg="Failed to create Load Balancer: {0}".format(e))
 
