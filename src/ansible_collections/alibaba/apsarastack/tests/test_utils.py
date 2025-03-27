@@ -55,6 +55,9 @@ def run_module(module_main_fuc:callable, modules_args:dict) -> dict:
             module_main_fuc()
         except SystemExit:
             pass
-        return json.loads(stdout.getvalue())
+        try:
+            return json.loads(stdout.getvalue())
+        except Exception:
+            return stdout.getvalue()
 
 
