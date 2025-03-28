@@ -1,0 +1,119 @@
+# encoding: utf-8
+'''
+Created on 2025年3月7日
+
+@author: jingyu.wy
+'''
+import unittest
+import uuid
+
+from dotenv import load_dotenv
+
+from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vpc import main as vpc_main
+from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vswitch import main as vswtich_main
+from ansible_collections.alibaba.apsarastack.plugins.modules.ali_security_group import main as security_group_main
+from ansible_collections.alibaba.apsarastack.plugins.modules.ali_instance import main as instance_main
+from ansible_collections.alibaba.apsarastack.plugins.modules.ali_route_entry import main as route_entry_main
+from ansible_collections.alibaba.apsarastack.plugins.modules.ali_route_entry_info import main as route_entry_info_main
+from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
+
+
+class Test(unittest.TestCase):
+
+    def __init__(self, methodName:str="runTest") -> None:
+        unittest.TestCase.__init__(self, methodName=methodName)
+        self.name = "ansible_test_%s" % uuid.uuid1()
+        self._vpc_args = {
+            "cidr_block": "172.16.0.0/16",
+            "vpc_name": self.name,
+            "description": "create by ansible unit test",
+        }
+        self._vswtich_args = {
+            "cidr_block": "172.16.1.0/24",
+            "name": self.name
+        }
+        self._security_group_args = {
+            "name": self.name
+        }
+        self._ecs_args = {
+            "state": 'present',
+            "image": "ubuntu_24_04_x86_64_20G_alibase_20241115.vhd",
+            "instance_type": "ecs.xn4v2.small",
+            "instance_name": self.name,
+            "password": "Ld123@123",
+            "tags": {
+                "test": "test"
+            },
+            "system_disk_name": "ansible_test_ecs_instance_test",
+            "system_disk_category": "cloud_ssd",
+            "max_bandwidth_out": "10",
+            "system_disk_size": "20",
+            "instance_charge_type": "PostPaid",
+            "internet_charge_type": "PayByTraffic",
+            "allocate_public_ip": True,
+            "force": True,
+        }
+        self._route_entry_args = {
+            "destination_cidrblock": "172.16.20.0/24",
+            "nexthop_type": 'Instance',
+            "name": "test_re"
+        }
+
+    def setUp(self) -> None:
+        unittest.TestCase.setUp(self)
+        load_dotenv()
+        result = run_module(vpc_main, self._vpc_args)
+        self._vpc_args['id'] = result['vpc']['vpc_id']
+        self._vpc_args['route_table_id'] = result['vpc']['route_table_id']
+        self._vswtich_args["vpc_id"] = result['vpc']['vpc_id']
+        self._security_group_args["vpc_id"] = result['vpc']['vpc_id']
+        result = run_module(vswtich_main, self._vswtich_args)
+        self._vswtich_args["id"] = result['vswitch']['vswitch_id']
+        result = run_module(security_group_main, self._security_group_args)
+        self._security_group_args["id"] = result['group']["group_id"]
+        self._ecs_args["vswitch_id"] = self._vswtich_args["id"]
+        self._ecs_args["security_groups"] = [self._security_group_args["id"],]
+        result = run_module(instance_main, self._ecs_args)
+        self._ecs_args["id"] = result['instances'][0]["id"]
+        self._route_entry_args["route_table_id"] = self._vpc_args['route_table_id']
+        self._route_entry_args["nexthop_id"] = self._ecs_args["id"]
+        result = run_module(route_entry_main, self._route_entry_args)
+        self._route_entry_args["route_entry_id"] = result["route_entry"]["route_entry_id"]
+
+    def tearDown(self) -> None:
+        unittest.TestCase.tearDown(self)
+        security_group = {
+            "state": "absent",
+        } | self._security_group_args
+        vswitch = {
+            "state": "absent",
+        } | self._vswtich_args
+        vpc_args = {
+            "state": "absent",
+        } | self._vpc_args
+        ecs_args = {
+            "state": "absent",
+        } | self._ecs_args
+        try:
+            run_module(instance_main, ecs_args)
+            run_module(security_group_main, security_group)
+        except:
+            pass
+        try:
+            run_module(vswtich_main, vswitch)
+            run_module(vpc_main, vpc_args)
+        except:
+            pass
+
+    def testDescribeRouteEntryInfo(self):        
+        route_entry_info_args = {
+            "route_table_id": self._vpc_args['route_table_id'],
+        }
+        result = run_module(route_entry_info_main, route_entry_info_args)
+        self.assertGreaterEqual(len(result['route_entrys']), 1,)
+        self.assertEqual(result['route_entrys'][0]['route_table_id'], self._vpc_args['route_table_id'])
+
+
+if __name__ == "__main__":
+    # import sys;sys.argv = ['', 'Test.testCreatedisk']
+    run_unittest_with_coverage()
