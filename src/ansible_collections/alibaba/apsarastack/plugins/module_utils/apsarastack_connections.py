@@ -38,6 +38,7 @@ APSARASTACK_ENDPOINTS = {
     "dns": ("dns-control.pop.%(domain)s", "dns-control.pop.%(region)s.%(domain)s",),
     "rds": ("rds.%(domain)s", "rds.%(region)s.%(domain)s",),
     "slb": ("slb-vpc.%(domain)s", "slb-vpc.%(region)s.%(domain)s",),
+    "ascm": ("ascm.%(domain)s", "ascm.%(region)s.%(domain)s",)
     }
 
 
@@ -119,6 +120,30 @@ def get_endpoint(domain:str, popcode:str, region:str, is_center_region:bool) -> 
 def connect_to_acs(acs_module, modules_params:dict, **params):
     conn = acs_module.connect_to_region(modules_params['apsarastack_region'], **params)
     popcode = acs_module.__name__.split('.')[-1]
+    conn._endpoint = get_endpoint(
+        modules_params['apsarastack_domain'], popcode,
+        modules_params['apsarastack_region'], modules_params['apsarastack_is_center_region']
+    )
+    conn._default_headers = {
+        "x-acs-organizationid": modules_params['apsarastack_department'],
+        "x-acs-resourcegroupid": modules_params['apsarastack_resourcegroup'],
+        "x-acs-regionid": modules_params['apsarastack_region'],
+        "x-acs-request-version": "v1",
+    }
+
+    def import_request(self, action):
+        request = ACSQueryConnection.import_request(self, action)
+        request.set_endpoint(conn._endpoint)
+        request.set_headers(conn._default_headers)
+        return request
+    
+    conn.import_request = types.MethodType(import_request, conn)
+
+    return conn
+
+def connect_to_universal(popcode, modules_params:dict, **params):
+    conn = ACSQueryConnection(region=modules_params['apsarastack_region'], **params)
+    popcode = "ascm"
     conn._endpoint = get_endpoint(
         modules_params['apsarastack_domain'], popcode,
         modules_params['apsarastack_region'], modules_params['apsarastack_is_center_region']
@@ -249,3 +274,14 @@ def slb_connect(module):
         module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return slb
+
+
+def ascm_connect(module):
+    """ Return an ascm connection"""
+    ascm_params = get_profile(module.params)
+    try:
+        ascm = connect_to_universal("ascm", module.params, **ascm_params)
+    except AnsibleACSError as e:
+        module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return ascm

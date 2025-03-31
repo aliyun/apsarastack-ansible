@@ -38,7 +38,6 @@ class Test(unittest.TestCase):
             "load_balancer_name": self.name,
             "load_balancer_spec": "slb.s1.small",
             "purge_tags": False,
-
         }
 
     def setUp(self) -> None:
@@ -80,14 +79,22 @@ class Test(unittest.TestCase):
                 "aaa": "bbb"
             }
         }
-        print(tags_args)
         result = run_module(slb_tag_main, tags_args)
         self.assertNotIn('failed', result)
+        tags = result["tags"]
+        self.assertEqual(tags["aaa"], "bbb")
+        self.assertEqual(len(tags), 1)
+        tags_args["tags"] = {
+            "bbbb": "22222222",
+            "cccc": "3333333"
+        }
+        result = run_module(slb_tag_main, tags_args)
+        self.assertNotIn('failed', result)
+        tags = result["tags"]
+        self.assertEqual(tags["bbbb"], "22222222")
+        self.assertEqual(tags["cccc"], "3333333")
+        self.assertEqual(len(tags), 2)
         
-        
-        
-
-
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testCreateVpc']
     run_unittest_with_coverage()
