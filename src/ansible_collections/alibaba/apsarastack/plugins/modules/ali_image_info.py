@@ -21,6 +21,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import do_common_request
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -113,7 +115,7 @@ images:
             "platform": "CentOS",
             "product_code": "",
             "progress": "100%",
-            "region": "cn-beijing",
+
             "size": 40,
             "status": "Available",
             "tags": {},
@@ -150,7 +152,7 @@ images:
             "platform": "CentOS",
             "product_code": "",
             "progress": "100%",
-            "region": "cn-beijing",
+
             "size": 80,
             "status": "Available",
             "tags": {},
@@ -180,6 +182,25 @@ try:
 except ImportError:
     HAS_FOOTMARK = False
 
+def get_images(module, image_id="", image_name=""):
+    result = {}
+    region = module.params.get('apsarastack_region')
+    data = {
+        "ImageId": image_id,
+        "ImageOwnerAlias": "self",
+        "RegionId": region,
+        "ImageName": image_name,
+    }
+    try:
+        response = do_common_request(
+            ecs_connect(module), "POST", "Ecs", "2014-05-26", "DescribeImages", body=data)
+        if response["asapiSuccess"] and response.get("Images"):
+            return response["Images"]["Image"]
+    except Exception as e:
+        module.fail_json(
+            msg="Failed to get_image_detail: %s  image_id: %s" % (e, image_id))
+    return result
+
 
 def get_info(image):
     """
@@ -187,29 +208,28 @@ def get_info(image):
         ID and returns it as a dictionary
     """
     return {
-        'architecture': image.architecture,
-        'creation_time': image.creation_time,
-        'description': image.description,
-        'disk_device_mappings': image.disk_device_mappings,
-        'image_id': image.image_id,
-        'image_name': image.image_name,
-        'image_owner_alias': image.image_owner_alias,
-        'image_version': image.image_version,
-        'is_copied': image.is_copied,
-        'is_self_shared': image.is_self_shared,
-        'is_subscribed': image.is_subscribed,
-        'is_support_cloudinit': image.is_support_cloudinit,
-        'is_support_io_optimized': image.is_support_io_optimized,
-        'platform': image.platform,
-        'product_code': image.product_code,
-        'progress': image.progress,
-        "region": image.region,
-        "size": image.size,
-        "status": image.status,
-        "tags": image.tags,
-        "usage": image.usage,
-        "osname": image.osname,
-        "ostype": image.ostype
+        'architecture': image["Architecture"],
+        'creation_time': image["CreationTime"],
+        'description': image["Description"],
+        'disk_device_mappings': image["DiskDeviceMappings"],
+        'image_id': image["ImageId"],
+        'image_name': image["ImageName"],
+        'image_owner_alias': image["ImageOwnerAlias"],
+        'image_version': image["ImageVersion"],
+        'is_copied': image["IsCopied"],
+        'is_self_shared': image["IsSelfShared"],
+        'is_subscribed': image["IsSubscribed"],
+        'is_support_cloudinit': image["IsSupportCloudinit"],
+        'is_support_io_optimized': image["IsSupportIoOptimized"],
+        'platform': image["Platform"],
+        'product_code': image["ProductCode"],
+        'progress': image["Progress"],
+        "size": image["Size"],
+        "status": image["Status"],
+        "tags": image["Tags"],
+        "usage": image["Usage"],
+        "osname": image["OSName"],
+        "ostype": image["OSType"],
     }
 
 
@@ -240,21 +260,21 @@ def main():
         ecs = ecs_connect(module)
         if image_ids:
             image_id = ",".join(image_ids)
-            for image in ecs.get_all_images(image_id=image_id, filters={"ImageOwnerAlias":"self"}):
+            for image in get_images(module, image_id=image_id):
                 result.append(get_info(image))
-                ids.append(image.image_id)
+                ids.append(image["ImageId"])
 
         elif image_names:
             for name in image_names:
-                for image in ecs.get_all_images(image_name=name, filters={"ImageOwnerAlias":"self"}):
+                for image in get_images(module, image_name=name):
                     if image:
                         result.append(get_info(image))
-                        ids.append(image.image_id)
+                        ids.append(image["ImageId"])
 
         else:
-            for image in ecs.get_all_images(filters={"ImageOwnerAlias":"self"}):
+            for image in get_images(module):
                 result.append(get_info(image))
-                ids.append(image.image_id)
+                ids.append(image["ImageId"])
 
         module.exit_json(changed=False, image_ids=ids, images=result, total=len(result))
 

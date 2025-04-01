@@ -106,34 +106,35 @@ except ImportError:
     HAS_FOOTMARK = False
 
 def tags_to_json(tags):
-    tags_dict = {}
+    tags_dicts = []
     for tagkey, tagvalue in tags.items():
-        tags_dict["TagKey"] = tagkey
-        tags_dict["TagValue"] = tagvalue
-    return json.dumps(tags_dict)
+        tags_dicts.append({
+            "TagKey": tagkey,
+            "TagValue": tagvalue
+        })
+    return json.dumps(tags_dicts)
 
-def tag_resources(module, resource_id, tags, resource_type):
+def tag_resources(module, resource_id, tags):
     try:
         data = {
             "LoadBalancerId": resource_id,
-            "ResourceType": resource_type,
-            "Tags": tags_to_json(tags)
+            "Tags": tags_to_json(tags),
+            "RegionId": module.params['apsarastack_region']
         }
         response = do_common_request(
             slb_connect(module), "POST", "Slb", "2014-05-15", "AddTags", body=data)
         if response["asapiSuccess"]:
             return True
     except Exception as e:
-        print("=========================================data: %s" % data)
         module.fail_json(msg='Failed to create route entry, error: {0}'.format(e))
 
 
-def untag_resources(module, resource_id, tags, resource_type):
+def untag_resources(module, resource_id, tags):
     try:
         data = {
             "LoadBalancerId": resource_id,
-            "ResourceType": resource_type,
-            "Tags": tags_to_json(tags)
+            "Tags": tags_to_json(tags),
+            "RegionId": module.params['apsarastack_region']
         }
         response = do_common_request(
             slb_connect(module), "POST", "Slb", "2014-05-15", "RemoveTags", body=data)
@@ -142,11 +143,11 @@ def untag_resources(module, resource_id, tags, resource_type):
     except Exception as e:
         module.fail_json(msg='Failed to create route entry, error: {0}'.format(e))
 
-def list_tags(module, resource_id, resource_type):
+def list_tags(module, resource_id):
     try:
         data = {
             "LoadBalancerId": resource_id,
-            "ResourceType": resource_type
+            "RegionId": module.params['apsarastack_region']
         }
         # print(route_entry_params)
         response = do_common_request(
@@ -155,9 +156,9 @@ def list_tags(module, resource_id, resource_type):
             tags = dict()
             tags_dict = response["TagSets"]["TagSet"]
             for tag in tags_dict:
-                tags["TagKey"] = tags["TagValue"]
+                tags[tag["TagKey"]] = tag["TagValue"]
             return tags
-    except SLBResponseError as e:
+    except Exception as e:
         module.fail_json(msg='Failed to create route entry, error: {0}'.format(e))
 
 
@@ -178,19 +179,20 @@ def main():
     # slb_conn = slb_connect(module)
 
     # Get values of variable
-    tags = module.params['tags']
-
-    if module.params['state'] == "present":
-        slb_changed = tag_resources(module, resource_id=module.params['resource_id'], tags=tags, resource_type=module.params['resource_type'])
-        tags = list_tags(module, resource_id=module.params['resource_id'], resource_type=module.params['resource_type'])
-    else:
-        slb_changed = untag_resources(module, resource_id=module.params['resource_id'], tags=tags, resource_type=module.params['resource_type'])
-
+    new_tags = module.params['tags']
+    old_tags = list_tags(module, resource_id=module.params['resource_id'])
     result = []
+    if module.params['state'] == "present":
+        untag_resources(module, resource_id=module.params['resource_id'], tags=old_tags)
+        slb_changed = tag_resources(module, resource_id=module.params['resource_id'], tags=new_tags)
+        result = list_tags(module, resource_id=module.params['resource_id'])
+    else:
+        slb_changed = untag_resources(module, resource_id=module.params['resource_id'], tags=old_tags)
+        result = []
     # for slb in slbs:
     #     result.append(slb.get().read())
 
-    module.exit_json(changed=slb_changed, tags=result)
+    module.exit_json(changed=slb_changed, slb=module.params['resource_id'], tags=result)
 
 
 if __name__ == '__main__':
