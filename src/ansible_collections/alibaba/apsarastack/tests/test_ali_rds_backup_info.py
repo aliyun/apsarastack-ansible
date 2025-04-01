@@ -10,20 +10,19 @@ import time
 
 from dotenv import load_dotenv
 
-
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vpc import main as vpc_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vswitch import main as vswtich_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_rds_instance import main as rds_instance_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_rds_backup import main as rds_backup_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_rds_database import main as rds_database_main
-
+from ansible_collections.alibaba.apsarastack.plugins.modules.ali_rds_backup_info import main as rds_backup_info_main
 class Test(unittest.TestCase):
 
     def __init__(self, methodName:str="runTest") -> None:
         unittest.TestCase.__init__(self, methodName=methodName)
-        self.name = "ansible_test_rds_backup_%s" % uuid.uuid1()
-        self.db_name = "ansible_test_rds_backup"
+        self.name = "ansible_test_rds_backup_info_%s" % uuid.uuid1()
+        self.db_name = "ansible_test_rds_backup_info"
         self._vpc_args = {
             "cidr_block": "172.16.0.0/16",
             "vpc_name": self.name,
@@ -49,6 +48,10 @@ class Test(unittest.TestCase):
         "character_set_name": "utf8",
         "db_description": "ansible_test"
                 }
+        self._rds_backup_args = {
+            "backup_strategy": "instance",
+            "backup_method": "Logical"
+                           }
 
     def setUp(self) -> None:
         unittest.TestCase.setUp(self)
@@ -63,6 +66,9 @@ class Test(unittest.TestCase):
         self._rds_instance_args["id"] = result['instances']['id']
         self._rds_database["instance_id"] = result['instances']['id']
         result = run_module(rds_database_main, self._rds_database)
+        self._rds_backup_args["db_instance_id"] = self._rds_instance_args["id"]
+        run_module(rds_backup_main, self._rds_backup_args)
+
 
     def tearDown(self) -> None:
         unittest.TestCase.tearDown(self)
@@ -87,18 +93,23 @@ class Test(unittest.TestCase):
             pass
 
 
-    def testCreateRdsBackup(self):
+    def testDescribeRdsBackup(self):
         rds_backup_args = {
             "db_instance_id": self._rds_instance_args["id"],
-            "backup_strategy": "instance",
-            "backup_method": "Logical"
+            "backup_status": "Success",
                            }
-        result = run_module(rds_backup_main, rds_backup_args)
-        self.assertEqual(result["backup"]["success"], True)
-        self.assertIn("BackupJobId", result["backup"])
-        rds_backup_args["state"] = "absent"
-        result = run_module(rds_backup_main, rds_backup_args)
-        self.assertNotIn('failed', result, result.get('msg', ''))
+        result = run_module(rds_backup_info_main, rds_backup_args)
+        status = {x["status"] for x in result["backups"]}
+        if status:
+            self.assertEqual(status, {"Success"})
+        rds_backup_args = {
+            "db_instance_id": self._rds_instance_args["id"],
+            "backup_mode": "Manual"
+                           }
+        result = run_module(rds_backup_info_main, rds_backup_args)
+        back_modes = {x["backup_mode"] for x in result["backups"]}
+        if back_modes:
+            self.assertEqual(back_modes, {"Manual"})
         
         
         

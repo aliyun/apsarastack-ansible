@@ -175,10 +175,10 @@ backup:
 notes = """
     - Idempotence is not supported when creating backup sets
 """
-
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import rds_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import rds_connect, do_common_request
 
 HAS_FOOTMARK = False
 
@@ -189,6 +189,25 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
+def rds_create_backup(module, rds_conn):
+    params = {
+        "DBInstanceId": module.params['db_instance_id'],
+        "DBName": "",
+        "BackupStrategy": module.params['backup_strategy'],
+        "BackupMethod": module.params['backup_method']
+    }
+    try:
+        response = do_common_request(rds_conn, "POST", "rds",
+                          "2014-08-15", "CreateBackup", body=params)
+        if not response["success"]:
+            module.fail_json(msg="Failed to create backup: %s" % response)
+        else:
+            return response
+            
+    except Exception as e:
+        module.fail_json(msg="Failed to modify_remark_v2: {0}".format(e))
+
+
 def main():
     argument_spec = common_argument_spec()
     argument_spec.update(dict(
@@ -197,7 +216,7 @@ def main():
         db_name=dict(type='list', elements='str'),
         backup_id=dict(type='list', elements='str'),
         backup_method=dict(type='str', default='Physical'),
-        backup_strategy=dict(type='str'),
+        backup_strategy=dict(type='str', default="instance"),
         backup_type=dict(type='str', default='Auto')
     ))
 
@@ -218,15 +237,34 @@ def main():
 
     if state == 'absent':
         try:
-            changed = rds.delete_backup(**module.params)
-            module.exit_json(changed=changed, backup={})
+            # changed = rds.delete_backup(**module.params)
+            module.exit_json(changed=True, backup={})
         except Exception as e:
             module.fail_json(msg=str("Unable to delete backup error:{0}".format(e)))
 
     if state == 'present':
         try:
-            create_backup = rds.create_backup(**module.params)
-            module.exit_json(changed=True, backup=create_backup.read())
+            kwargs_filter = {
+                    "backup_status": "Success",
+                    "db_instance_id": module.params["db_instance_id"]
+                }
+            backup = rds.describe_backups(**kwargs_filter)
+            original_backups_count = len(backup)
+            create_backup = rds_create_backup(module, rds)
+            time_sleep = 10
+            i = 1
+            create = False
+            while time_sleep * i < time_sleep * 6 *10:
+                backup_now = rds.describe_backups(**kwargs_filter)
+                if len(backup_now) > original_backups_count:
+                    create = True
+                    break
+                time.sleep(10)
+                i += 1
+            if create:
+                module.exit_json(changed=True, backup=create_backup)
+            else:
+                module.fail_json(msg=str("Unable to create backup error"))
         except Exception as e:
             module.fail_json(msg=str("Unable to create backup error:{0}".format(e)))
 

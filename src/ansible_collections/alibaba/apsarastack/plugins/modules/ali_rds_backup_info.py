@@ -148,7 +148,8 @@ backups:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.apsarastack_ecs import ecs_argument_spec, rds_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import rds_connect, do_common_request
 
 HAS_FOOTMARK = False
 
@@ -160,7 +161,7 @@ except ImportError:
 
 
 def main():
-    argument_spec = ecs_argument_spec()
+    argument_spec = common_argument_spec()
     argument_spec.update(dict(
         db_instance_id=dict(type='str', aliases=['instance_id'], required=True),
         backup_id=dict(type='str'),
@@ -181,7 +182,7 @@ def main():
         for backup in rds.describe_backups(**module.params):
             if backup_status and backup.status.lower() != backup_status.lower():
                 continue
-            if backup_mode and backup.mode.lower() != backup_status.lower():
+            if backup_mode and backup.mode.lower() != backup_mode.lower():
                 continue
             result.append(backup.read())
 
