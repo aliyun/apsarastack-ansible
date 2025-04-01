@@ -196,29 +196,31 @@ def get_image_detail(image):
     :return: return id, status and object of disk
     """
     if image:
-        return {'id': image["ImageId"],
-                'image_name': image["ImageName"],
-                'size': image["Size"],
-                'region_id': image["ImageName"],
-                'disk_device_mappings': image["DiskDeviceMappings"],
-                'status': image["Status"],
-                'platform': image["Platform"],
-                'creation_time': image["CreationTime"],
-                }
+        return {
+            'id': image["ImageId"],
+            'image_name': image["ImageName"],
+            'size': image["Size"],
+            'region_id': image["ImageName"],
+            'disk_device_mappings': image["DiskDeviceMappings"],
+            'status': image["Status"],
+            'platform': image["Platform"],
+            'creation_time': image["CreationTime"],
+        }
 
-def describe_image(module, image_id):
+def describe_image(module, image_id="", image_name=""):
     result = {}
     region = module.params.get('apsarastack_region')
     data = {
         "ImageId": image_id,
         "ImageOwnerAlias": "self",
+        "ImageName": image_name,
         "RegionId": region,
     }
     try:
         response = do_common_request(
             ecs_connect(module), "POST", "Ecs", "2014-05-26", "DescribeImages", body=data)
         if response["asapiSuccess"] and response.get("Images"):
-            return response.get("Images")
+            return response["Images"]["Image"]
     except Exception as e:
         module.fail_json(
             msg="Failed to get_image_detail: %s  image_id: %s  response：%s" % (e, image_id, response))
@@ -355,11 +357,11 @@ def main():
 
     try:
         if image_id:
-            images = ecs.get_all_images(image_id=image_id)
+            images = describe_image(module, image_id=image_id)
             if images and len(images) == 1:
                 current_image = images[0]
         elif image_name and state == 'absent':
-            images = ecs.get_all_images(image_name=image_name)
+            images = describe_image(module, image_name=image_name)
             if images:
                 if len(images) == 1:
                     current_image = images[0]
@@ -371,7 +373,7 @@ def main():
                                          "please use image_id or a new image_name to specify a unique image."
                                          "Matched images ids are: {1}".format(image_name, images_ids))
         elif state == 'absent':
-            images = ecs.get_all_images()
+            images = describe_image(module)
             if images and len(images) > 0:
                 current_image = images[0]
 

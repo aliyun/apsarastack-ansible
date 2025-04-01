@@ -4,8 +4,6 @@ Created on 2025年3月7日
 
 @author: jingyu.wy
 '''
-import sys
-sys.path.append(r"D:\dwt\ansible\ansible-module-apsarastack\src")
 import unittest
 import uuid
 
@@ -107,17 +105,17 @@ class Test(unittest.TestCase):
 
     def testDescribeEipInfo(self):        
         image_info_args = {
-            "name_prefix": 'ansible_test',
+            "image_names": ["ansible_test_%s" % uuid.uuid1(),],
         }
         result = run_module(image_info_main, image_info_args)
         print(result)
         self.assertEqual(len(result['images']), 1,)
-        self.assertEqual(result['images'][0]['id'], self.image_info_args['id'])
+        self.assertEqual(result['images'][0]['image_name'], image_info_args['image_names'][0])
         image_info_args = {
-            "name_prefix": '_ansible_test',
+            "image_names": '_ansible_test',
         }
         result = run_module(image_info_main, image_info_args)
-        self.assertEqual(len(result['eips']), 0,)
+        self.assertEqual(len(result['images']), 0,)
 
 
 if __name__ == "__main__":
