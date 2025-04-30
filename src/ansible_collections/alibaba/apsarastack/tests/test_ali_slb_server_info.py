@@ -19,11 +19,13 @@ from ansible_collections.alibaba.apsarastack.plugins.modules.ali_security_group 
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_instance import main as instance_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_slb_server import main as slb_server_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_slb_server_info import main as slb_server_info_main
+from ansible_collections.alibaba.apsarastack.tests.utils import generate_password
 class Test(unittest.TestCase):
 
     def __init__(self, methodName:str="runTest") -> None:
         unittest.TestCase.__init__(self, methodName=methodName)
         self.name = "ansible_test_slb_server_info_%s" % uuid.uuid1()
+        self.password = generate_password()
         self._vpc_args = {
             "cidr_block": "172.16.0.0/16",
             "vpc_name": self.name,
@@ -41,7 +43,7 @@ class Test(unittest.TestCase):
         "image": "aliyun_3_arm64_20G_pro_alibase_20240716.vhd",
         "instance_type": "ecs.g5s-ft-k10-c1m1.large",
         "instance_name": self.name,
-        "password": "Ld123@123",
+        "password": self.password,
         "count_tag": '{"test": "test"}',
         "tags": {
             "test": "test"

@@ -152,12 +152,12 @@ image:
                     "import_ossbucket": "",
                     "import_ossobject": "",
                     "size": "40",
-                    "snapshot_id": "s-2zeddnvf7uhw3xw3its6",
+                    "snapshot_id": "s-2zeddnvf7uhw3xxxxxxx",
                     "type": "system"
                 }
             ]
         },
-        "id": "m-2zee2i7regbnhhawrwc2",
+        "id": "m-2zee2i7regbnhhxxxxxx",
         "image_name": "image_test",
         "creation_time": "2017-10-17T09:33:02Z",
         "platform": "CentOS",
@@ -169,7 +169,7 @@ image_id:
     description: return the created image id
     returned: except on absent
     type: str
-    sample: "m-2ze43t8c5urc4mvkx3fp"
+    sample: "m-2ze43t8c5urc4mxxxxxx"
 '''
 import time
 from ansible.module_utils.basic import AnsibleModule

@@ -15,13 +15,14 @@ from ansible_collections.alibaba.apsarastack.plugins.modules.ali_rds_account_inf
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_rds_instance import main as rds_instance_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_rds_account import main as rds_account_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
-
+from ansible_collections.alibaba.apsarastack.tests.utils import generate_password
 
 class Test(unittest.TestCase):
 
     def __init__(self, methodName:str="runTest") -> None:
         unittest.TestCase.__init__(self, methodName=methodName)
         self.name = "ansible_test_rds_account_info_%s" % uuid.uuid1()
+        self.password = generate_password()
         self.account_name = "ansible_test_rds_account_info"
         self._vpc_args = {
             "cidr_block": "172.16.0.0/16",
@@ -47,7 +48,7 @@ class Test(unittest.TestCase):
         self._rds_account = {
 
         "name": self.account_name,
-        "password": "12345678",
+        "password": self.password,
         "account_type": "Normal",
         "description": "from ansible",
         "privilege": "DBOwner"

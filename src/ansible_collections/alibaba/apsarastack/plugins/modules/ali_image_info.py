@@ -78,7 +78,7 @@ image_ids:
     description: List all image's id after operating ecs image.
     returned: when success
     type: list
-    sample: ["m-2zeddnvf7uhw3xwcr6dl", "m-2zeirrrgvh8co3z364f0"]
+    sample: ["m-2zeddnvf7uhw3xxxxxxx", "m-2zeirrrgvh8co3xxxxxx"]
 images:
     description: Details about the ecs images.
     returned: when success
@@ -96,12 +96,12 @@ images:
                         "import_ossbucket": "",
                         "import_ossobject": "",
                         "size": "40",
-                        "snapshot_id": "s-2zeddnvf7uhw3xw3its6",
+                        "snapshot_id": "s-2zeddnvf7uhw3xxxxxxx",
                         "type": "system"
                     }
                 ]
             },
-            "image_id": "m-2zeddnvf7uhw3xwcr6dl",
+            "image_id": "m-2zeddnvf7uhw3xxxxxxx",
             "image_name": "test_image_1",
             "image_owner_alias": "self",
             "image_version": "",
@@ -133,12 +133,12 @@ images:
                         "import_ossbucket": "",
                         "import_ossobject": "",
                         "size": "80",
-                        "snapshot_id": "s-2zeirrrgvh8co3z5nq5d",
+                        "snapshot_id": "s-2zeirrrgvh8co3xxxxxx",
                         "type": "system"
                     }
                 ]
             },
-            "image_id": "m-2zeirrrgvh8co3z364f0",
+            "image_id": "m-2zeirrrgvh8co3xxxxxx",
             "image_name": "test_image_2",
             "image_owner_alias": "self",
             "image_version": "",

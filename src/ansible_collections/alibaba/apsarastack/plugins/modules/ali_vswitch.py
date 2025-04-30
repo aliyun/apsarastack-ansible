@@ -106,12 +106,12 @@ EXAMPLES = """
   ali_vswitch:
     cidr_block: '{{ cidr_blok }}'
     name: 'my-vsw'
-    vpc_id: 'vpc-abc12345'
+    vpc_id: 'vpc-xxx'
 
 - name: Modify the existing vswitch
   ali_vswitch:
     cidr_block: '{{ cidr_blok }}'
-    vpc_id: 'vpc-abc12345'
+    vpc_id: 'vpc-xxxx'
     name: 'my-vsw-from-ansible'
 
 - name: Delete the existing vswitch

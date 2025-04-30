@@ -73,7 +73,7 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
 - name: Retrieving slbs using ids
   ali_slb_lb_info:
-    ids: 'lb-sn33f3'
+    ids: 'lb-xxxx'
 
 - name: Filter slb using name_regex
   ali_slb_lb_info:
@@ -88,7 +88,7 @@ ids:
     description: List ids of being fetched slb.
     returned: when success
     type: list
-    sample: ["lb-dj1oi1h5l74hg22gsnugf", "lb-dj1t1xwn0y9zcr90e52i2"]
+    sample: ["lb-dj1oi1h5l74hg22xxxxxx", "lb-dj1t1xwn0y9zcr9xxxxxx"]
 names:
     description: List names of being fetched slb.
     returned: when success
@@ -195,7 +195,7 @@ load_balancers:
             description: The ID of the load balancer was created.
             returned: always
             type: str
-            sample: "lb-2zea9ohgtf"
+            sample: "lb-xxxx"
         load_balancer_name:
             description: The name of the load balancer was created.
             returned: always
@@ -230,7 +230,7 @@ load_balancers:
             description: The resource group of the load balancer belongs.
             returned: always
             type: str
-            sample: "rg-acfmwvvtg5owavy"
+            sample: "rg-xxxx"
         slave_zone_id:
             description: The ID of the backup zone
             returned: always
@@ -245,12 +245,12 @@ load_balancers:
             description: The vpc of the load balancer belongs.
             returned: always
             type: str
-            sample: "vpc-fn3nc3"
+            sample: "vpc-xxxx"
         vswitch_id:
             description: The vswitch of the load balancer belongs.
             returned: always
             type: str
-            sample: "vsw-c3nc3r"
+            sample: "vsw-xxxxx"
 '''
 
 from ansible.module_utils.basic import AnsibleModule

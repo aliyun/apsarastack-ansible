@@ -84,7 +84,7 @@ backups:
             description: The ID of the backup set.
             returned: always
             type: str
-            sample: 321020562
+            sample: xxxx
         db_instance_id:
             description: The ID of the instance.
             returned: always

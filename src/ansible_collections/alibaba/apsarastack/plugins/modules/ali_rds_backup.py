@@ -110,7 +110,7 @@ backup:
             description: The ID of the backup set.
             returned: always
             type: str
-            sample: 321020562
+            sample: xxx
         db_instance_id:
             description: The ID of the instance.
             returned: always
@@ -145,7 +145,7 @@ backup:
             description: alias of backup_id.
             returned: always
             type: str
-            sample: 321020562
+            sample: xxxx
         instance_id:
             description: alias of db_instance_id.
             returned: always

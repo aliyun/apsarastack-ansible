@@ -16,13 +16,14 @@ from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vswitch import 
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_rds_instance import main as rds_instance_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_rds_account import main as rds_account_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
-
+from ansible_collections.alibaba.apsarastack.tests.utils import generate_password
 
 class Test(unittest.TestCase):
 
     def __init__(self, methodName:str="runTest") -> None:
         unittest.TestCase.__init__(self, methodName=methodName)
         self.name = "ansible_test_rds_account_%s" % uuid.uuid1()
+        self.password = generate_password()
         self._vpc_args = {
             "cidr_block": "172.16.0.0/16",
             "vpc_name": self.name,
@@ -81,7 +82,7 @@ class Test(unittest.TestCase):
         rds_account_args = {
         "instance_id": self._rds_instance_args["id"],
         "name": "account_test",
-        "password": "12345678",
+        "password": self.password,
         "account_type": "Normal",
         "description": "from ansible",
         "privilege": "DBOwner"
@@ -94,7 +95,7 @@ class Test(unittest.TestCase):
         rds_account_args = {
         "instance_id": self._rds_instance_args["id"],
         "name": "account_test",
-        "password": "test_123456"
+        "password": self.password
                 }
         result = run_module(rds_account_main, rds_account_args)
         self.assertNotIn('failed', result)

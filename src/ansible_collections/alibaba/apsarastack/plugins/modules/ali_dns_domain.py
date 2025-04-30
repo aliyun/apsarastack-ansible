@@ -20,10 +20,11 @@
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
 from __future__ import (absolute_import, division, print_function)
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import dns_connect, do_common_request
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+
 from ansible.module_utils.basic import AnsibleModule
-import time
+
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import dns_connect, do_common_request
 
 __metaclass__ = type
 
@@ -139,7 +140,7 @@ dns:
             description: alias of 'domain_id'.
             returned: always
             type: str
-            sample: dns-c2e00da5
+            sample: dns-c2xxxxxx
         puny_code:
             description: Chinese domain name punycode code, English domain name returned empty.
             type: bool
@@ -163,7 +164,7 @@ dns:
             description: DNS resource id.
             returned: always
             type: str
-            sample: dns-c2e00da5
+            sample: dns-c2xxxxxx
         version_code:
             description: Cloud resolution version Code.
             returned: always

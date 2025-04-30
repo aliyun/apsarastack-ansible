@@ -81,7 +81,7 @@ EXAMPLES = '''
 - name: Gather facts about all security groups in a specific VPC
   ali_security_group_info:
     filters:
-      vpc-id: vpc-12345678
+      vpc-id: vpc-12xxxxxx
 
 - name: Gather facts about a security group using a name_prefix
   ali_security_group_info:
@@ -90,8 +90,8 @@ EXAMPLES = '''
 - name: Gather facts about a security group by id
   ali_security_group_info:
     group_ids:
-      - sg-12345678
-      - sg-cnqwu234
+      - sg-12xxxxxx
+      - sg-cnxxxxxx
 
 - name: Gather facts about any security group with a tag key Name and value Example
   ali_security_group_info:
@@ -105,7 +105,7 @@ ids:
     description: list IDs of security groups
     returned: always
     type: list
-    sample: ["sg-2ze12578be1ls4wcjhfd", "sg-2ze28n1vj1iqztxp7p6h"]
+    sample: ["sg-2ze12578be1ls4xxxxxx", "sg-2ze28n1vj1iqztxxxxxx"]
 groups:
     description: Returns an array of complex objects as described below.
     returned: always

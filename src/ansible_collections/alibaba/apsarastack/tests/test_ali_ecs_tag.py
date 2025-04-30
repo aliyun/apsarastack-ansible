@@ -19,7 +19,7 @@ from ansible_collections.alibaba.apsarastack.plugins.modules.ali_instance import
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_instance_info import main as instance_info_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_ecs_tag import main as ecs_tag_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_disk import main as disk_main
-
+from ansible_collections.alibaba.apsarastack.tests.utils import generate_password
 class Test(unittest.TestCase):
 
     def __init__(self, methodName:str="runTest") -> None:
@@ -27,6 +27,7 @@ class Test(unittest.TestCase):
         self.name = "ansible_test_ecs_tag_%s" % uuid.uuid1()
         self.tag_key = "ansible_test_ecs_tag"
         self.tag_value = "ansible"
+        self.passward = generate_password()
         self._vpc_args = {
             "cidr_block": "172.16.0.0/16",
             "vpc_name": self.name,
@@ -44,7 +45,7 @@ class Test(unittest.TestCase):
         "image": "ubuntu_24_04_x86_64_20G_alibase_20241115.vhd",
         "instance_type": "ecs.xn4v2.small",
         "instance_name": self.name,
-        "password": "Ld123@123",
+        "password": self.passward,
         "count_tag": '{"test": "test"}',
         "tags": {
             "test": "test"

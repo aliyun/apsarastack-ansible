@@ -98,7 +98,7 @@ EXAMPLES = '''
   ali_vswitch_info:
     cidr_prefix: "10.0."
     filters:
-      vpc-id: vpc-abcdef00
+      vpc-id: vpc-abxxxxxx
 '''
 
 RETURN = '''
@@ -106,7 +106,7 @@ ids:
     description: List ids of being fetched vswtich.
     returned: when success
     type: list
-    sample: ["vsw-2zegusms7jwd94lq7ix8o", "vsw-2ze5hrb3y5ksx5oa3a0xa"]
+    sample: ["vsw-2zegusms7jwd94lxxxxxx", "vsw-2ze5hrb3y5ksx5oxxxxxx"]
 vswitches:
     description: Returns an array of complex objects as described below.
     returned: success

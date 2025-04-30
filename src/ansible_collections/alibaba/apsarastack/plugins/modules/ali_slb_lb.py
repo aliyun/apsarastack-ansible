@@ -176,7 +176,7 @@ load_balancer:
                     description: The backend server id
                     returned: always
                     type: str
-                    sample: "i-vqunci342"
+                    sample: "i-xxxx"
                 weight:
                     description: The backend server weight
                     returned: always
@@ -211,7 +211,7 @@ load_balancer:
             description: The ID of the load balancer was created. Same as load_balancer_id.
             returned: always
             type: str
-            sample: "lb-2zea9ohgtf"
+            sample: "lb-xxxx"
         internet_charge_type:
             description: The load balancer internet charge type
             returned: always
@@ -247,7 +247,7 @@ load_balancer:
             description: The ID of the load balancer was created.
             returned: always
             type: str
-            sample: "lb-2zea9ohgtf"
+            sample: "lb-xxxx"
         load_balancer_name:
             description: The name of the load balancer was created.
             returned: always
@@ -282,7 +282,7 @@ load_balancer:
             description: The resource group of the load balancer belongs.
             returned: always
             type: str
-            sample: "rg-acfmwvvtg5owavy"
+            sample: "rg-xxx"
         slave_zone_id:
             description: The ID of the backup zone
             returned: always
@@ -297,12 +297,12 @@ load_balancer:
             description: The vpc of the load balancer belongs.
             returned: always
             type: str
-            sample: "vpc-fn3nc3"
+            sample: "vpc-xxx"
         vswitch_id:
             description: The vswitch of the load balancer belongs.
             returned: always
             type: str
-            sample: "vsw-c3nc3r"
+            sample: "vsw-xxxx"
 '''
 
 import time

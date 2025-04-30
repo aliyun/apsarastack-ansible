@@ -118,9 +118,9 @@ route_entry:
     type: dict
     sample: {
         "destination_cidrblock": "10.0.14.0/24",
-        "nexthop_id": "i-2zejbnp5zv525per4g84",
+        "nexthop_id": "i-2zejbnp5zv525xxxxxx",
         "nexthop_type": "Instance",
-        "route_table_id": "vtb-2zeeokge820zn0kqawmi9",
+        "route_table_id": "vtb-2zeeokge820zn0kxxxxxx",
         "status": "Available",
         "type": "Custom"
     }
@@ -138,9 +138,9 @@ destination_cidrblocks:
     sample: [
         {
             "destination_cidrblock": "10.0.14.0/24",
-            "nexthop_id": "i-2zejbnp5zv525per4g84",
+            "nexthop_id": "i-2zejbnp5zv525pxxxxxx",
             "nexthop_type": "Instance",
-            "route_table_id": "vtb-2zeeokge820zn0kqawmi9",
+            "route_table_id": "vtb-2zeeokge820zn0kxxxxxx",
             "status": "Available",
             "type": "Custom"
         },
@@ -148,7 +148,7 @@ destination_cidrblocks:
             "destination_cidrblock": "10.0.13.0/24",
             "nexthop_id": "",
             "nexthop_type": "local",
-            "route_table_id": "vtb-2zeeokge820zn0kqawmi9",
+            "route_table_id": "vtb-2zeeokge820zn0kxxxxxx",
             "status": "Available",
             "type": "System"
         }
@@ -157,7 +157,7 @@ route_table_id:
     description: the ID of route table to which route entry belongs
     returned: on present and absent
     type: str
-    sample: "vtb-2zemlj5nscgoicjnxes7h"
+    sample: "vtb-2zemlj5nscgoicjxxxxxx"
 total:
     description: The number of all route entries after retrieving route entry.
     returned: on list

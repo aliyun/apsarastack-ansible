@@ -258,7 +258,7 @@ EXAMPLES = '''
     apsarastack_region: cn-beijing
     image: ubuntu1404_64_40G_cloudinit_20160727.raw
     instance_type: ecs.n4.small
-    vswitch_id: vsw-abcd1234
+    vswitch_id: vsw-abxxxxxx
     assign_public_ip: True
     max_bandwidth_out: 10
     host_name: myhost
@@ -266,9 +266,9 @@ EXAMPLES = '''
     system_disk_category: cloud_efficiency
     system_disk_size: 100
     internet_charge_type: PayByBandwidth
-    security_groups: ["sg-f2rwnfh23r"]
+    security_groups: ["sg-f2rwxxxxxx"]
 
-    instance_ids: ["i-abcd12346", "i-abcd12345"]
+    instance_ids: ["i-abcxxxxxx", "i-abcxxxxxx"]
     force: True
 
   tasks:
@@ -559,7 +559,7 @@ instances:
                   description: The ID of the security group.
                   returned: always
                   type: str
-                  sample: sg-0123456
+                  sample: sg-xxxxxx
                 group_name:
                   description: The name of the security group.
                   returned: always
@@ -584,12 +584,12 @@ instances:
             description: The ID of the vswitch in which the instance is running.
             returned: always
             type: str
-            sample: vsw-dew00abcdef
+            sample: vsw-dew00xxxxxx
         vpc_id:
             description: The ID of the VPC the instance is in.
             returned: always
             type: str
-            sample: vpc-0011223344
+            sample: vpc-0011xxxxxx
         spot_price_limit:
           description:
             - The maximum hourly price for the preemptible instance.
@@ -606,7 +606,7 @@ ids:
     description: List of ECS instance IDs
     returned: always
     type: list
-    sample: [i-12345er, i-3245fs]
+    sample: [i-1xxxxxx, i-3xxxxxx]
 '''
 
 import re

@@ -89,15 +89,15 @@ EXAMPLES = '''
   hosts: localhost
   connection: local
   vars:
-    load_balancer_id: lb-abcd1234
+    load_balancer_id: lb-xxx
   tasks:
     - name: add backend server
       ali_slb_server:
         load_balancer_id: '{{ load_balancer_id }}'
         backend_servers:
-          - server_id: i-abcd1234
+          - server_id: i-xxx
             weight: 70
-          - server_id: i-abce1245
+          - server_id: i-xxx
 
 #Basic example to set backend server of load balancer instance
 - name: set backend server
@@ -111,11 +111,11 @@ EXAMPLES = '''
       ali_slb_server:
         apsarastack_access_key: '{{ apsarastack_access_key }}'
         apsarastack_secret_key: '{{ apsarastack_secret_key }}'
-        load_balancer_id: lb-abcd1234
+        load_balancer_id: lb-xxxx
         backend_servers:
-          - server_id: i-abcd1234
+          - server_id: i-xx
             weight: 50
-          - server_id: i-abcd1234
+          - server_id: i-xxxx
             weight: 80
 
 #Basic example to remove backend servers from load balancer instance
@@ -125,11 +125,11 @@ EXAMPLES = '''
   tasks:
     - name: remove backend servers
       ali_slb_server:
-        load_balancer_id: lb-abcd1234
+        load_balancer_id: lb-xxxxx
         state: absent
         backend_servers:
-          - i-abcd1234
-          - i-abcd1234
+          - i-xxxx
+          - i-xxxxx
 
 '''
 RETURN = '''
@@ -137,7 +137,7 @@ load_balancer_id:
     description: ID of the load balancer.
     returned: when success
     type: str
-    sample: "lb-2zeyfm5a14c9ffxvxmvco"
+    sample: "lb-2zeyfm5a14c9ffxxxxxxx"
 "backend_servers":
     description: Details about the backened-servers that were added.
     returned: when success
@@ -145,11 +145,11 @@ load_balancer_id:
     sample: [
         {
             "health_status": "abnormal",
-            "id": "i-2zeau2evvbnwufq0fa7q"
+            "id": "i-2zeau2evvbnwufxxxxxx"
         },
         {
             "health_status": "abnormal",
-            "id": "i-2zehasnejqr6g6agys5a"
+            "id": "i-2zehasnejqr6g6xxxxxx"
         }
     ]
 '''

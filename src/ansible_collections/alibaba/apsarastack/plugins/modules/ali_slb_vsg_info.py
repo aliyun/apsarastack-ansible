@@ -70,7 +70,7 @@ EXAMPLES = '''
 - name: Filter vsg using name_regex
   ali_slb_vsg_info:
     name_prefix: 'ansible-foo'
-    lb_id: 'lb-cn3cn34'
+    lb_id: 'lb-xxxx'
 '''
 
 RETURN = '''
@@ -78,7 +78,7 @@ ids:
     description: List ids of being fetched virtual server group.
     returned: when success
     type: list
-    sample: ["rsp-2zehblhcv", "rsp-f22c4lhcv"]
+    sample: ["rsp-xxxx", "rsp-xxxx"]
 names:
     description: List name of being fetched virtual server group.
     returned: when success
@@ -124,12 +124,12 @@ vserver_groups:
             description: The ID of the virtual server group was created. Same as vserver_group_id.
             returned: always
             type: str
-            sample: "rsp-2zehblhcv"
+            sample: "rsp-xxxx"
         vserver_group_id:
             description: The ID of the virtual server group was created.
             returned: always
             type: str
-            sample: "rsp-2zehblhcv"
+            sample: "rsp-xxxx"
         vserver_group_name:
             description: The name of the virtual server group was created.
             returned: always

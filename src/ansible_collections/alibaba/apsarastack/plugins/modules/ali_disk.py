@@ -21,6 +21,14 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import time
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import env_fallback
+
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ecs_connect
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
@@ -185,7 +193,7 @@ disk:
         "description": "travis-ansible-instance",
         "device": "",
         "disk_name": "travis-ansible-instance",
-        "id": "d-2ze9yw0a1sw9neyx8t24",
+        "id": "d-2ze9yw0a1sw9nexxxxxx",
         "instance_id": "",
         "launch_time": "2017-06-19T03:19:30Z",
         "region_id": "cn-beijing",
@@ -198,14 +206,9 @@ instance_id:
     description: the instance id which attached disk
     returned: on attach
     type: str
-    sample: "i-i2rnfnenfnds"
+    sample: "i-i2rnfnxxxxxx"
 '''
 
-import time
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ecs_connect
-from ansible.module_utils.basic import env_fallback
 HAS_FOOTMARK = False
 
 try:

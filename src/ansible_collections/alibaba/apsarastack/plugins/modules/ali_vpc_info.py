@@ -103,7 +103,7 @@ ids:
     description: List all vpc's id after operating vpc.
     returned: when success
     type: list
-    sample: ["vpc-2zegusms7jwd94lq7ix8o", "vpc-2ze5hrb3y5ksx5oa3a0xa"]
+    sample: ["vpc-2zegusms7jwd94lxxxxxx", "vpc-2ze5hrb3y5ksx5oxxxxxx"]
 vpcs:
     description: Returns an array of complex objects as described below.
     returned: always

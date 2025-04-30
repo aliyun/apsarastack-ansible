@@ -74,26 +74,26 @@ load_balancer_id:
     description: ID of the load balancer.
     returned: when success
     type: str
-    sample: "lb-dj1jywbux1zslfna6pvnv"
+    sample: "lb-dj1jywbux1zslfnxxxxxx"
 "backend_servers":
     description: Details about the backened-servers that were added.
     returned: when success
     type: list
     sample: [
         {
-            "id": "i-2ze35dldjc05dcvezgwk",
+            "id": "i-2ze35dldjc05dcxxxxxx",
             "listener_port": 80,
             "port": 80,
             "server_health_status": "unavailable"
         },
         {
-            "id": "i-2ze35dldjc05dcvezgwk",
+            "id": "i-2ze35dldjc05dcxxxxxx",
             "listener_port": 8080,
             "port": 8080,
             "server_health_status": "unavailable"
         },
         {
-            "id": "i-2ze35dldjc05dcvezgwk",
+            "id": "i-2ze35dldjc05dcxxxxxx",
             "listener_port": 8085,
             "port": 8085,
             "server_health_status": "unavailable"

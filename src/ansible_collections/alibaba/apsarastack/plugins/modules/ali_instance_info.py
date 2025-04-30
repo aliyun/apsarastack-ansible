@@ -90,8 +90,8 @@ EXAMPLES = '''
 - name: Find all instances based on the specified ids
   ali_instance_info:
     instance_ids:
-      - "i-35b333d9"
-      - "i-ddav43kd"
+      - "i-35xxxxxx"
+      - "i-ddxxxxxx"
   register: instances_by_ids
 
 - name: Find all instances based on the specified name_prefix
@@ -351,7 +351,7 @@ ids:
     description: List of ECS instance IDs
     returned: always
     type: list
-    sample: [i-12345er, i-3245fs]
+    sample: [i-1xxxxxx, i-3xxxxxx]
 '''
 
 import traceback

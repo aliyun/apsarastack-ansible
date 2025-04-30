@@ -16,13 +16,14 @@ from ansible_collections.alibaba.apsarastack.plugins.modules.ali_instance import
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_route_entry import main as route_entry_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_route_entry_info import main as route_entry_info_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
-
+from ansible_collections.alibaba.apsarastack.tests.utils import generate_password
 
 class Test(unittest.TestCase):
 
     def __init__(self, methodName:str="runTest") -> None:
         unittest.TestCase.__init__(self, methodName=methodName)
         self.name = "ansible_test_%s" % uuid.uuid1()
+        self.password = generate_password()
         self._vpc_args = {
             "cidr_block": "172.16.0.0/16",
             "vpc_name": self.name,
@@ -40,7 +41,7 @@ class Test(unittest.TestCase):
             "image": "ubuntu_24_04_x86_64_20G_alibase_20241115.vhd",
             "instance_type": "ecs.xn4v2.small",
             "instance_name": self.name,
-            "password": "Ld123@123",
+            "password": self.password,
             "tags": {
                 "test": "test"
             },

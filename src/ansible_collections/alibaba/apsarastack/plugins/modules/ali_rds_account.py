@@ -110,7 +110,7 @@ EXAMPLES = """
   ali_rds_account:
     db_instance_id: '{{ db_instance_id }}'
     account_name: account
-    account_password: Ansible12345
+    account_password: <Your Password>
     account_description: account from ansible
     account_type: Normal
 
@@ -118,7 +118,7 @@ EXAMPLES = """
   ali_rds_account:
     db_instance_id: '{{ db_instance_id }}'
     account_name: account
-    account_password: Ansible12345_new
+    account_password: <Your Password>
 
 - name: Changed. Modify rds account description.
   ali_rds_account:

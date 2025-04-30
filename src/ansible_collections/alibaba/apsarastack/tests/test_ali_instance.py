@@ -16,12 +16,13 @@ from ansible_collections.alibaba.apsarastack.plugins.modules.ali_vswitch import 
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_security_group import main as security_group_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_instance import main as instance_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
-
+from ansible_collections.alibaba.apsarastack.tests.utils import generate_password
 
 class Test(unittest.TestCase):
 
     def __init__(self, methodName:str="runTest") -> None:
         unittest.TestCase.__init__(self, methodName=methodName)
+        self.passward = generate_password()
         self.name = "ansible_test_ecs_instance_info_%s" % uuid.uuid1()
         self._vpc_args = {
             "cidr_block": "172.16.0.0/16",
@@ -77,7 +78,7 @@ class Test(unittest.TestCase):
         "instance_type": "ecs.xn4v2.small",
         "instance_name": self.name,
         "vswitch_id": self._vswtich_args["id"],
-        "password": "Ld123@123",
+        "password": self.passward,
         "count_tag": '{"test": "test"}',
         "tags": {
             "test": "test"

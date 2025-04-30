@@ -103,7 +103,7 @@ eips:
             description: The EIP id
             returned: always
             type: str
-            sample: "eip-2zee1nu68juox4"
+            sample: "eip-2zee1nu6xxxxxx"
         allocation_time:
             description: The time the EIP was created
             returned: always
@@ -128,12 +128,12 @@ eips:
             description: Allocated EIP id (alias for allocation_id)
             returned: always
             type: str
-            sample: "eip-2zee1nu68juox4"
+            sample: "eip-2zee1nu6xxxxxx"
         instance_id:
             description: Associated instance id
             returned: always
             type: str
-            sample: "i-123456"
+            sample: "i-12xxxx"
         instance_region_id:
             description: The region id in which the associated instance
             returned: always
@@ -183,7 +183,7 @@ ids:
     description: List of elastic ip address IDs
     returned: always
     type: list
-    sample: [eip-12345er, eip-3245fs]
+    sample: [eip-12345erxxx, eip-3245fsxxxx]
 '''
 
 from ansible.module_utils.basic import AnsibleModule

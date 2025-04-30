@@ -97,33 +97,33 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
 - name: Create VServer Group in SLB
   ali_slb_vsg:
-    load_balancer_id: 'lb-cnqnc234'
+    load_balancer_id: 'lb-xxxx'
     name: 'ansible-vsg'
 
 - name: Add backend servers to vserver group
   ali_slb_vsg:
-    load_balancer_id: 'lb-cnqnc234'
+    load_balancer_id: 'lb-xxxx'
     name: 'ansible-vsg'
     backend_servers:
-      - instance_id: 'i-f2n3cn34c'
+      - instance_id: 'i-xxxx'
         port: 8080
         weight: 100
         type: ecs
-      - instance_id: 'eni-n34cjf4vd'
+      - instance_id: 'eni-xxxx'
         port: 8081
         weight: 100
         type: eni
 
 - name: Purge backend servers from vserver group
   ali_slb_vsg:
-    load_balancer_id: 'lb-cnqnc234'
+    load_balancer_id: 'lb-xxx'
     name: 'ansible-vsg'
     backend_servers:
-      - instance_id: 'eni-f2n3cn34c'
+      - instance_id: 'eni-xxxx'
         port: 8080
         weight: 100
         type: eni
-      - instance_id: 'eni-n34cjf4vd'
+      - instance_id: 'eni-xxxx'
         port: 8081
         weight: 100
         type: eni
@@ -131,7 +131,7 @@ EXAMPLES = '''
 
 - name: Delete VServer Group in SLB
   ali_slb_vsg:
-    load_balancer_id: 'lb-cnqnc234'
+    load_balancer_id: 'lb-xxx'
     name: 'ansible-vsg'
     state: absent
 '''
@@ -177,12 +177,12 @@ vserver_group:
             description: The ID of the virtual server group was created. Same as vserver_group_id.
             returned: always
             type: str
-            sample: "rsp-2zehblhcv"
+            sample: "rsp-xxxx"
         vserver_group_id:
             description: The ID of the virtual server group was created.
             returned: always
             type: str
-            sample: "rsp-2zehblhcv"
+            sample: "rsp-xxxx"
         vserver_group_name:
             description: The name of the virtual server group was created.
             returned: always

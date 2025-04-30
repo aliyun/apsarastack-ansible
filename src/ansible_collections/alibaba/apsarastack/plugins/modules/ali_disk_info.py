@@ -66,7 +66,7 @@ EXAMPLES = '''
   ali_disk_info:
     filters:
       disk_ids: ['d-2ze3carakr2qxxxxxx', 'd-2zej6cuwzmummxxxxxx']
-      zone_id: 'cn-beijing-c'
+      zone_id: 'xxxx'
       instance_id: 'i-2zeii6c3xxxxxxx'
 
 - name: Filter disk using name_prefix
@@ -82,7 +82,7 @@ disk_ids:
     description: List all disk's id after operating ecs disk.
     returned: when success
     type: list
-    sample: ["d-2ze8ohezcyvm4omrabud","d-2zeakwizkdjdu4q4lfco"]
+    sample: ["d-2ze8ohezcyvm4oxxxxxx","d-2zeakwizkdjdu4xxxxxx"]
 disks:
     description: Details about the ecs disks that were created.
     returned: when success
@@ -100,21 +100,21 @@ disks:
         "disk_charge_type": "PostPaid",
         "enable_auto_snapshot": true,
         "encrypted": false,
-        "id": "d-2ze8ohezcyvm4omrabud",
+        "id": "d-2ze8ohezcyvm4oxxxxxx",
         "image_id": "ubuntu_140405_32_40G_cloudinit_20161115.vhd",
-        "instance_id": "i-2zegc3s8ihxq2pcysekk",
+        "instance_id": "i-2zegc3s8ihxq2pxxxxxx",
         "name": "test1",
         "operation_locks": {
             "operation_lock": []
         },
         "portable": false,
         "product_code": "",
-        "region_id": "cn-beijing",
+        "region_id": "xxxx",
         "size": 40,
         "snapshop_id": "",
         "status": "in_use",
         "type": "system",
-        "zone_id": "cn-beijing-a"
+        "zone_id": "xxxx"
     },
     {
         "attached_time": "2017-08-13T06:57:37Z",
@@ -128,21 +128,21 @@ disks:
         "disk_charge_type": "PostPaid",
         "enable_auto_snapshot": true,
         "encrypted": false,
-        "id": "d-2zeakwizkdjdu4q4lfco",
+        "id": "d-2zeakwizkdjdu4xxxxxx",
         "image_id": "ubuntu_140405_64_40G_cloudinit_20161115.vhd",
-        "instance_id": "i-2zeenj8meljkoi85lz3c",
+        "instance_id": "i-2zeenj8meljkoixxxxxx",
         "name": "test2",
         "operation_locks": {
             "operation_lock": []
         },
         "portable": false,
         "product_code": "",
-        "region_id": "cn-beijing",
+        "region_id": "xxxx",
         "size": 40,
         "snapshop_id": "",
         "status": "in_use",
         "type": "system",
-        "zone_id": "cn-beijing-a"
+        "zone_id": "xxxx"
     }
 ]
 total:

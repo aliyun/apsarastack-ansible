@@ -122,27 +122,27 @@ EXAMPLES = '''
 # Note: These examples do not set authentication details, see the Alibaba Cloud Guide for details.
 - name: Associate an elastic IP with an instance
   ali_eip:
-    instance_id: i-cqhc3hf4
+    instance_id: i-cqhcxxxx
 - name: Associate an elastic IP with a device
   ali_eip:
-    instance_id: eni-snc3nh438t
+    instance_id: eni-snc3nhxxxx
 - name: Associate an elastic IP with a instance and allow reassociation
   ali_eip:
-    instance_id: i-cqhc3hf4
+    instance_id: i-cqhcxxxx
     allow_reassociation: True
 - name: Disassociate an elastic IP from an instance
   ali_eip:
-    instance_id: i-cqhc3hf4
+    instance_id: i-cqhcxxxx
     ip: 93.184.216.119
     state: absent
 - name: Disassociate an elastic IP with a device
   ali_eip:
-    instance_id: eni-snc3nh438t
+    instance_id: eni-snc3nhxxxx
     ip: 93.184.216.119
     state: absent
 - name: Allocate a new elastic IP and associate it with an instance
   ali_eip:
-    instance_id: i-1212f003
+    instance_id: i-1212xxxx
 - name: Allocate a new elastic IP without associating it to anything and set name and description
   ali_eip:
     name: created-by-ansible

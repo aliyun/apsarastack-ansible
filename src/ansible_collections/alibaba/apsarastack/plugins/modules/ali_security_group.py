@@ -126,12 +126,12 @@ EXAMPLES = '''
 - name: Create a new security group
   ali_security_group:
     name: 'AliyunSG'
-    vpc_id: 'vpc-123csecd'
+    vpc_id: 'vpc-12xxxxxx'
 
 - name: Authorize security group
   ali_security_group:
     name: 'AliyunSG'
-    vpc_id: 'vpc-123csecd'
+    vpc_id: 'vpc-12xxxxxx'
     rules:
       - ip_protocol: tcp
         port_range: 1/122
@@ -140,13 +140,13 @@ EXAMPLES = '''
       - ip_protocol: icmp
         port_range: -1/-1
         source_cidr_ip: 10.0.0.0/10
-        dest_group_id: 'sg-ce33rdsfe'
+        dest_group_id: 'sg-ce3xxxxxx'
         priority: 1
 
 - name: Delete security grp
   ali_security_group:
     name: 'AliyunSG'
-    vpc_id: 'vpc-123csecd'
+    vpc_id: 'vpc-12xxxxxx'
     state: absent
 '''
 
@@ -168,12 +168,12 @@ group:
             returned: always
         group_id:
             description: Security group id
-            sample: sg-abcd1234
+            sample: sg-abxxxxxx
             type: str
             returned: always
         id:
             description: Alias of "group_id".
-            sample: sg-abcd1234
+            sample: sg-abxxxxxx
             type: str
             returned: always
         inner_access_policy:
@@ -192,7 +192,7 @@ group:
             returned: always
         vpc_id:
             description: ID of VPC to which the security group belongs
-            sample: vpc-abcd1234
+            sample: vpc-abxxxxxx
             type: str
             returned: always
         permissions:

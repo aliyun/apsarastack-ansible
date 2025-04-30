@@ -101,7 +101,7 @@ dns:
             description: alias of 'domain_id'.
             returned: always
             type: str
-            sample: dns-c2e00da5
+            sample: dns-cxxxxxx
         puny_code:
             description: Chinese domain name punycode code, English domain name returned empty
             type: bool
@@ -125,7 +125,7 @@ dns:
             description: DNS resource id
             returned: always
             type: str
-            sample: dns-c2e00da5
+            sample: dns-cxxxxxx
         version_code:
             description: Cloud resolution version Code
             returned: always
