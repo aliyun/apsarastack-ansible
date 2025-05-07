@@ -1,9 +1,5 @@
-# Alibaba Cloud Collection
-The Ansible Alibaba Cloud collection includes a variety of Ansible content to help automate the management of Alibaba Cloud instances. This collection is maintained by the Alibaba Cloud team.
-
-<a href="https://shell.aliyun.com/?action=git_open&git_repo=https://code.aliyun.com/labs/tutorial-cli-ansible.git&tutorial=tutorial-zh.md#/" target="try_ansible_in_cloudshell">
-  <img src="https://img.alicdn.com/tfs/TB1wt1zq9zqK1RjSZFpXXakSXXa-1066-166.png" width="180" />
-</a>
+# Aliyun ApsaraStack Collection
+The Ansible Aliyun ApsaraStack collection includes a variety of Ansible content to help automate the management of Aliyun ApsaraStack instances. This collection is maintained by the Aliyun ApsaraStack team.
 
 ## Python version compatibility
 
@@ -11,12 +7,12 @@ This collection requires Python 3.6 or greater.
 
 ## Installing this collection
 
-You can install the Alibaba Cloud collection with the Ansible Galaxy CLI:
+You can install the Aliyun ApsaraStack collection with the Ansible Galaxy CLI:
 
 1. create a `requirements.txt` file with the following:
    ```yaml
    collections:
-     - name: https://github.com/alibaba/alibaba.apsarastack.git
+     - name: https://github.com/aliyun/apsarastack-ansible.git#/src/ansible_collections/alibaba
        type: git
        branch: master
    ```
@@ -24,6 +20,17 @@ You can install the Alibaba Cloud collection with the Ansible Galaxy CLI:
    ```shell
    ansible-galaxy collection install -r requirements.txt
    ```
+   
+> The python module dependencies are not installed by `ansible-galaxy`.  They can
+be manually installed using pip:
+> ```shell
+> pip install -r requirements.txt
+> ```
+> or:
+> ```shell
+> pip install footmark jmespath==0.10.0
+> ```
+
 
 ## Using this collection
 
@@ -40,12 +47,15 @@ You can either call modules by their Fully Qualified Collection Namespace (FQCN)
     vpc_cidr: "172.16.0.0/12"
     vpc_description: "Create a new VPC resource via Ansible example apsarastack-ecs-vpc."
 
-  roles:
-    - vpc
-
   tasks:
     - name: Create a new vpc with user_cidrs
       alibaba.apsarastack.ali_vpc:
+        popgw_domain: "xxxx"
+        region: "xxxx"
+        access_key: "xxxx"
+        secret_key: "xxxx"
+        organization_id: "xxxx"
+        resourcegroupset_id: "xxxx"
         cidr_block: '{{ vpc_cidr }}'
         vpc_name: '{{ name }}-user_cidrs'
         description: '{{ vpc_description }}'
@@ -66,14 +76,6 @@ There are several files in the module directory, and these files describe some f
 - `ali_slb_lb.py`: Create or Delete a Load balancer.
 - `ali_slb_listener.py`: Create or Delete a listener for one Load balancer.
 - `ali_slb_server.py`: Add or Remove backend server to/from Load balancer.
-- `ali_ess_group.py`: Create or Delete a scaling group.
-- `ali_ess_configuration.py`: Create or Delete a scaling configuration.
-- `ali_ess_instance.py`: Add or Remove ECS instnaces in a specified scaling group.
-- `ali_ess_task.py`: Create or Delete a scheduled task for scaling activity.
-- `ali_ess_rule.py`: Create or Delete a scaling rule.
-- `ali_eni.py`: Create or Delete a network interface.
-- `ali_bucket.py`: Create or Delete an OSS bucket.
-- `ali_bucket_object.py`: Upload or Download an object to/from an OSS bucket.
 
 ## lib/ansible/module_utils
 In the module utils directory, the file apsarastack_ecs.py identifies and gains playbook params, and provides this params to modules/*.py. In addition, this file implements connection between ansible and Apsarastack API via footmark.

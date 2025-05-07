@@ -5,11 +5,12 @@ Created on 2025年3月7日
 @author: jingyu.wy
 '''
 import unittest
-import sys
+
+from dotenv import load_dotenv
 
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_disk import main as disk_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
-from dotenv import load_dotenv
+
 
 class Test(unittest.TestCase):
 

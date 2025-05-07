@@ -26,7 +26,7 @@ class Test(unittest.TestCase):
         }
         result = run_module(vpc_main, vpc_args)
         self.assertNotIn('failed', result)
-        self.assertEqual(result['changed'], False)
+        self.assertFalse(result['changed'])
         self.assertEqual(result['vpc'], {})
         
         vpc_args = {

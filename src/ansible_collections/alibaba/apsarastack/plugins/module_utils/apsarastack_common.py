@@ -35,7 +35,7 @@ def common_argument_spec():
             fallback=(env_fallback, ['APSARASTACK_IS_CENTER_REGION']), default=True
         ),
         apsarastack_department=dict(
-            required=True, aliases=['department', 'organization', ],
+            required=True, aliases=['department', 'department_id', 'organization', 'organization_id'],
             fallback=(env_fallback, ['APSARASTACK_DEPARTMENT', 'APSARASTACK_DEPARTMENT_ID',
                                     'APSARASTACK_ORGANIZATION','APSARASTACK_ORGANIZATION_ID',])
         ),
