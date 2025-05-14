@@ -27,6 +27,7 @@ try:
     import footmark.ram
     import footmark.ros
     import footmark.oos
+    import footmark.oss
     import footmark.market
     HAS_FOOTMARK = True
 except ImportError:
@@ -119,6 +120,20 @@ def get_endpoint(domain:str, popcode:str, region:str, is_center_region:bool) -> 
 
 def connect_to_acs(acs_module, modules_params:dict, **params):
     conn = acs_module.connect_to_region(modules_params['apsarastack_region'], **params)
+    popcode = acs_module.__name__.split('.')[-1]
+    conn._endpoint = get_endpoint(
+        modules_params['apsarastack_domain'], popcode,
+        modules_params['apsarastack_region'], modules_params['apsarastack_is_center_region']
+    )
+    conn._default_headers = {
+        "x-acs-organizationid": modules_params['apsarastack_department'],
+        "x-acs-resourcegroupid": modules_params['apsarastack_resourcegroup'],
+        "x-acs-regionid": modules_params['apsarastack_region'],
+        "x-acs-request-version": "v1",
+    }
+
+def connect_to_bucket(acs_module, modules_params:dict, **params):
+    conn = acs_module.connect_to_bucket(modules_params['apsarastack_region'], **params)
     popcode = acs_module.__name__.split('.')[-1]
     conn._endpoint = get_endpoint(
         modules_params['apsarastack_domain'], popcode,
@@ -285,3 +300,27 @@ def ascm_connect(module):
         module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return ascm
+
+
+def ossbucket_connect(module):
+    """ Return an oss bucket connection"""
+    oss_params = get_profile(module.params)
+    oss_params["bucket_name"] = module.params["bucket_name"]
+    del oss_params["ecs_role_name"]
+    try:
+        oss_bucket = connect_to_bucket(footmark.oss, module.params, **oss_params)
+    except AnsibleACSError as e:
+        module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return oss_bucket
+
+
+def ossservice_connect(module):
+    """ Return an oss service connection"""
+    rds_params = get_profile(module.params)
+    try:
+        oss_service = connect_to_acs(footmark.oss, module.params, **rds_params)
+    except AnsibleACSError as e:
+        module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return oss_service
