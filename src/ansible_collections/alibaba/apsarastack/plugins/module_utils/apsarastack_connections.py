@@ -39,7 +39,8 @@ APSARASTACK_ENDPOINTS = {
     "dns": ("dns-control.pop.%(domain)s", "dns-control.pop.%(region)s.%(domain)s",),
     "rds": ("rds.%(domain)s", "rds.%(region)s.%(domain)s",),
     "slb": ("slb-vpc.%(domain)s", "slb-vpc.%(region)s.%(domain)s",),
-    "ascm": ("ascm.%(domain)s", "ascm.%(region)s.%(domain)s",)
+    "ascm": ("ascm.%(domain)s", "ascm.%(region)s.%(domain)s",),
+    "ess": ("ess.%(domain)s", "ess.%(region)s.%(domain)s",),
     }
 
 
@@ -131,9 +132,26 @@ def connect_to_acs(acs_module, modules_params:dict, **params):
         "x-acs-regionid": modules_params['apsarastack_region'],
         "x-acs-request-version": "v1",
     }
+    def import_request(self, action):
+        request = ACSQueryConnection.import_request(self, action)
+        request.set_endpoint(conn._endpoint)
+        request.set_headers(conn._default_headers)
+        return request
+    
+    conn.import_request = types.MethodType(import_request, conn)
 
+    return conn
+
+
+class OssConn(object):
+  def __init__(self, modules_params):
+      self.region = modules_params.get('region')
+      self.security_token = modules_params.get('security_token')
+      self.acs_access_key_id = modules_params.get('acs_access_key_id')
+      self.acs_secret_access_key = modules_params.get('acs_secret_access_key')
+      self.user_agent = modules_params.get('user_agent')
 def connect_to_bucket(acs_module, modules_params:dict, **params):
-    conn = acs_module.connect_to_bucket(modules_params['apsarastack_region'], **params)
+    conn = OssConn(params)
     popcode = acs_module.__name__.split('.')[-1]
     conn._endpoint = get_endpoint(
         modules_params['apsarastack_domain'], popcode,
@@ -145,7 +163,6 @@ def connect_to_bucket(acs_module, modules_params:dict, **params):
         "x-acs-regionid": modules_params['apsarastack_region'],
         "x-acs-request-version": "v1",
     }
-
     def import_request(self, action):
         request = ACSQueryConnection.import_request(self, action)
         request.set_endpoint(conn._endpoint)
@@ -182,7 +199,6 @@ def connect_to_universal(popcode, modules_params:dict, **params):
 
 
 def do_common_request(conn, method:str, popcode: str, version:str, api_name:str, pattern:str="", headers:dict={}, query:dict={}, body:dict=None) -> dict:
-    
     if not conn.security_token: 
         credentials = AccessKeyCredential(conn.acs_access_key_id, conn.acs_secret_access_key)
     else:
@@ -305,7 +321,6 @@ def ascm_connect(module):
 def ossbucket_connect(module):
     """ Return an oss bucket connection"""
     oss_params = get_profile(module.params)
-    oss_params["bucket_name"] = module.params["bucket_name"]
     del oss_params["ecs_role_name"]
     try:
         oss_bucket = connect_to_bucket(footmark.oss, module.params, **oss_params)
@@ -324,3 +339,13 @@ def ossservice_connect(module):
         module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return oss_service
+
+def ess_connect(module):
+    """ Return an ess service connection"""
+    ess_params = get_profile(module.params)
+    try:
+        ess = connect_to_acs(footmark.ess, module.params, **ess_params)
+    except AnsibleACSError as e:
+        module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return ess

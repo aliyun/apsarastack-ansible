@@ -179,10 +179,8 @@ def main():
     if state == 'present':
         try:
             if oss_bucket.bucket_exists():
-                print("1111111111111111111111111111")
                 result = oss_bucket.put_acl(permission=permission)
             else:
-                print("222222222222222222222222")
                 result = oss_bucket.create(permission=permission)
             module.exit_json(changed=True, bucket=get_bucket(result))
         except Exception as e:
