@@ -209,6 +209,22 @@ def create_ess_group(module, ess_conn):
     except Exception as e:
         module.fail_json(
             msg="Failed to create_ess_group: %s  params: %s" % (e, params))
+        
+
+def delete_ess_group(module, ess_conn):
+    params = {
+        "ScalingGroupId": module.params['id'],
+    }
+        
+    try:
+        response = do_common_request(
+            ess_conn, "POST", "Ess", "2014-08-28", "DeleteScalingGroup", body=params)
+        if response["asapiSuccess"]:
+            return True
+    except Exception as e:
+        module.fail_json(
+            msg="Failed to create_ess_group: %s  params: %s" % (e, params))
+        
 
 def get_details(group):
     result = dict(id=group.id,
@@ -321,7 +337,7 @@ def main():
 
     if state == 'absent':
         try:
-            module.exit_json(changed=current.terminate())
+            module.exit_json(changed=delete_ess_group(module, ess))
         except Exception as e:
             module.fail_json(msg='Delete scaling group {0} got an error: {1}'.format(current.id, e))
 

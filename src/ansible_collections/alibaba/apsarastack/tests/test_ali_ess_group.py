@@ -81,11 +81,12 @@ class Test(unittest.TestCase):
             "removal_policies": ["OldestInstance", "NewestInstance"],
             "vswitch_ids": [self._vswtich_args["id"]],
             "vpc_id": self._vpc_args["id"],
-            "db_instance_ids": [self._rds_instance_args["id"]]
+            # "db_instance_ids": [self._rds_instance_args["id"]]
 
         }
         result = run_module(ess_group_main, ess_group_args)
         self.assertEqual(result['name'], ess_group_args['name'])
+        ess_group_args["id"] = result["id"]
         ess_group_args["state"] = "absent"
         result = run_module(ess_group_main, ess_group_args)
         self.assertNotIn('failed', result)

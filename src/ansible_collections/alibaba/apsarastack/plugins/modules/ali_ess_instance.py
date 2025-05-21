@@ -108,10 +108,10 @@ changed:
     type: bool
     sample: true
 '''
-
+import time
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ess_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ess_connect, do_common_request
 
 HAS_FOOTMARK = False
 
@@ -120,6 +120,86 @@ try:
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
+
+
+def enable_scaling_group(ess_conn, module):
+    params = {
+        "ScalingGroupId": module.params["group_id"],
+    }
+    try:
+        response = do_common_request(
+        ess_conn, "POST", "Ess", "2014-08-28", "EnableScalingGroup", body=params)
+        if response["asapiSuccess"]:
+            return True
+    except Exception as e:
+        pass
+
+def disable_scaling_group(ess_conn, module):
+    params = {
+        "ScalingGroupId": module.params["group_id"],
+    }
+    try:
+        response = do_common_request(
+        ess_conn, "POST", "Ess", "2014-08-28", "DisableScalingGroup", body=params)
+        if response["asapiSuccess"]:
+            return True
+    except Exception as e:
+       return str(e)
+    
+def attach_instances(ess_conn, module):
+    params = {
+        "ScalingGroupId": module.params["group_id"],
+    }
+    index = 0
+    for esc_instance in module.params['instance_ids']:
+        key = "InstanceId.%s" % (index + 1)
+        params[key] = esc_instance
+    for _ in range(5):
+        try:
+            response = do_common_request(
+            ess_conn, "POST", "Ess", "2014-08-28", "AttachInstances", body=params)
+            if response["asapiSuccess"]:
+                ess_instances = ess_conn.describe_instances(scaling_group_id=module.params["group_id"])
+                result = []
+                for ess_instance in ess_instances:
+                    if ess_instance.instance_id in module.params['instance_ids']:
+                        result.append({
+                            "instance_id":ess_instance.instance_id,
+                            "scaling_group_id": ess_instance.scaling_group_id
+                        })
+                return result
+        except Exception as e:
+            time.sleep(3)
+    module.fail_json(
+                msg="Failed to attach_instances: %s  params: %s" % (e, params))
+        
+
+def remove_instances(ess_conn, module, remove_instances):
+    params = {
+        "ScalingGroupId": module.params["group_id"],
+    }
+    index = 0
+    for esc_instance in remove_instances:
+        key = "InstanceId.%s" % (index + 1)
+        params[key] = esc_instance
+    for _ in range(5):
+        try:
+            response = do_common_request(
+            ess_conn, "POST", "Ess", "2014-08-28", "DetachInstances", body=params)
+            if response["asapiSuccess"]:
+                ess_instances = ess_conn.describe_instances(scaling_group_id=module.params["group_id"])
+                result = []
+                for ess_instance in ess_instances:
+                    if ess_instance.instance_id in remove_instances:
+                        result.append({
+                            "instance_id":ess_instance.instance_id,
+                            "scaling_group_id": ess_instance.scaling_group_id
+                        })
+                return result
+        except Exception as e:
+            time.sleep(5)
+    module.fail_json(
+            msg="Failed to remove_instances: %s  params: %s" % (e, params))
 
 
 def main():
@@ -163,7 +243,8 @@ def main():
     if state == 'present':
         if adding:
             try:
-                changed = ess.attach_instances(scaling_group_id=group_id, instance_ids=adding)
+                enable_scaling_group(ess, module)
+                changed = attach_instances(ess, module)
                 module.exit_json(changed=changed)
             except Exception as e:
                 module.fail_json(msg="Adding ECS instances to scaling group got an error: {0}.".format(e))
@@ -173,7 +254,7 @@ def main():
 
     if removing:
         try:
-            changed = ess.remove_instances(scaling_group_id=group_id, instance_ids=removing)
+            changed = remove_instances(ess, module, removing)
         except Exception as e:
             module.fail_json(msg='Removing ECS instances from scaling group got an error: {0}.'.format(e))
 
