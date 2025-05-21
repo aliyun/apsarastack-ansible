@@ -120,31 +120,6 @@ try:
     HAS_FOOTMARK = True
 except ImportError:
     HAS_FOOTMARK = False
-
-
-def enable_scaling_group(ess_conn, module):
-    params = {
-        "ScalingGroupId": module.params["group_id"],
-    }
-    try:
-        response = do_common_request(
-        ess_conn, "POST", "Ess", "2014-08-28", "EnableScalingGroup", body=params)
-        if response["asapiSuccess"]:
-            return True
-    except Exception as e:
-        pass
-
-def disable_scaling_group(ess_conn, module):
-    params = {
-        "ScalingGroupId": module.params["group_id"],
-    }
-    try:
-        response = do_common_request(
-        ess_conn, "POST", "Ess", "2014-08-28", "DisableScalingGroup", body=params)
-        if response["asapiSuccess"]:
-            return True
-    except Exception as e:
-       return str(e)
     
 def attach_instances(ess_conn, module):
     params = {
@@ -243,7 +218,6 @@ def main():
     if state == 'present':
         if adding:
             try:
-                enable_scaling_group(ess, module)
                 changed = attach_instances(ess, module)
                 module.exit_json(changed=changed)
             except Exception as e:
