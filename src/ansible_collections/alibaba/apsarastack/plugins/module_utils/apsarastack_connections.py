@@ -41,6 +41,7 @@ APSARASTACK_ENDPOINTS = {
     "slb": ("slb-vpc.%(domain)s", "slb-vpc.%(region)s.%(domain)s",),
     "ascm": ("ascm.%(domain)s", "ascm.%(region)s.%(domain)s",),
     "ess": ("ess.%(domain)s", "ess.%(region)s.%(domain)s",),
+    "ram": ("ascm.%(domain)s", "ascm.%(region)s.%(domain)s",),
     }
 
 
@@ -131,6 +132,13 @@ def connect_to_acs(acs_module, modules_params:dict, **params):
         "x-acs-resourcegroupid": modules_params['apsarastack_resourcegroup'],
         "x-acs-regionid": modules_params['apsarastack_region'],
         "x-acs-request-version": "v1",
+		# "RegionId":              client.RegionId, //	ASAPI
+		# "x-acs-organizationid":  client.Department,
+		# "x-acs-resourcegroupid": client.ResourceGroup,
+		# "x-acs-regionid":        client.RegionId,
+		# "x-acs-request-version": "v1",
+		# "x-acs-asapi-product":   popcode,
+		# "x-ascm-product-name":   popcode,
     }
     def import_request(self, action):
         request = ACSQueryConnection.import_request(self, action)
@@ -212,9 +220,13 @@ def do_common_request(conn, method:str, popcode: str, version:str, api_name:str,
     request.set_version(version)
     request.set_action_name(api_name)
     if pattern:
-        request.setSysUriPattern(pattern)
+        request.set_uri_pattern(pattern)
+        request.add_header("x-acs-asapi-product", popcode)
+        request.add_header("x-ascm-product-name", popcode)
+        request.add_header("RegionId", conn.region)
     # 云产品的Endpoint地址
     request.set_domain(conn._endpoint)
+    request.set_endpoint(conn._endpoint)
     # 设置请求方式
     request.set_method(method)
     # 设置请求协议类型
@@ -349,3 +361,14 @@ def ess_connect(module):
         module.fail_json(msg=str(e))
     # Otherwise, no region so we fallback to the old connection method
     return ess
+
+
+def ram_connect(module):
+    """ Return an ram service connection"""
+    ram_params = get_profile(module.params)
+    try:
+        ram = connect_to_acs(footmark.ram, module.params, **ram_params)
+    except AnsibleACSError as e:
+        module.fail_json(msg=str(e))
+    # Otherwise, no region so we fallback to the old connection method
+    return ram
