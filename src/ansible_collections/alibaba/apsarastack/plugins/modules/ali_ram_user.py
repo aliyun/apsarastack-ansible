@@ -166,7 +166,7 @@ user:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ascm_connect, do_common_request
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ram_connect, do_common_request
 
 HAS_FOOTMARK = False
 
@@ -177,6 +177,9 @@ except ImportError:
     HAS_FOOTMARK = False
 
 def ascm_list_user(module, ram_conn):
+    params = {
+        "loginName": "xx"
+    }
     response = do_common_request(
             ram_conn, "POST", "ascm", "2019-05-10", "ListUsers", body=params)
 # def dns_exists_v2(module, dns_conn, domain_name=None, domain_id=None):
@@ -259,7 +262,7 @@ def main():
     if HAS_FOOTMARK is False:
         module.fail_json(msg='footmark required for this module.')
 
-    ram_conn = ascm_connect( module)
+    ram_conn = ram_connect( module)
 
     # Get values of variable
     state = module.params['state']
