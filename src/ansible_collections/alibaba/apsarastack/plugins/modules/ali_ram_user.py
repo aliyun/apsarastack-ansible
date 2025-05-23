@@ -20,6 +20,9 @@
 # along with Ansible. If not, see http://www.gnu.org/licenses/.
 
 from __future__ import (absolute_import, division, print_function)
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ram_connect, do_common_request
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
+from ansible.module_utils.basic import AnsibleModule
 
 __metaclass__ = type
 
@@ -164,9 +167,6 @@ user:
             sample: ansible test
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ram_connect, do_common_request
 
 HAS_FOOTMARK = False
 
@@ -176,72 +176,92 @@ try:
 except ImportError:
     HAS_FOOTMARK = False
 
-def ascm_list_user(module, ram_conn):
-    params = {
-        "loginName": "xx"
-    }
-    response = do_common_request(
-            ram_conn, "POST", "ascm", "2019-05-10", "ListUsers", body=params)
-# def dns_exists_v2(module, dns_conn, domain_name=None, domain_id=None):
-#     if not domain_name and not domain_id:
-#         return False
-#     try:
-#         i = 1
-#         params = {
-#             "PageNumber": i,
-#             "PageSize": 10,
-#         }
-#         response = do_common_request(
-#             dns_conn, "POST", "CloudDns", "2021-06-24", "DescribeGlobalZones", body=params)
-#         for domain in response["Data"]:
-#             if domain_name:
-#                 if domain["Name"] == domain_name:
-#                     return domain
-#             else:
-#                 if domain["Id"] == domain_id:
-#                     return domain
-#         while response["Data"] and (i-1) * params["PageSize"] + len(response["Data"]) < response["TotalItems"]:
-#             i += 1
-#             params = {
-#                 "PageNumber": i,
-#                 "PageSize": 10,
-#             }
-#             response = do_common_request(
-#                 dns_conn, "POST", "CloudDns", "2021-06-24", "DescribeGlobalZones", body=params)
-#             for domain in response["Data"]:
-#                 if domain_name:
-#                     if domain["Name"] == domain_name:
-#                         return domain
-#                 else:
-#                     if domain["Id"] == domain_id:
-#                         return domain
-#     except Exception as e:
-#         module.fail_json(msg="Failed to dns_exists_v2: {0}".format(e))
-    
-    
 
-
-def user_exists(module, ram_conn, user_name, user_id):
-    params = {
-        "loginName": "uiflinkuser0522060210",
-    }
-    # try:
-    response = do_common_request(
-            ram_conn, "POST", "ascm", "2019-05-10", "ListUsers", "/ascm/auth/user/listUsers", body=params)
-    # except Exception as ex:
-        
-      # return module.fail_json(msg="11111111111%s111111111111" % ex)
+def user_exists(module, ram_conn, user_name=None, display_name=None, user_id=None):
+    params = {}
+    if user_name:
+        params["searchKey"] = user_name
+    if display_name:
+        params["displayName"] = display_name
+    if user_id:
+        params["primaryKey"] = user_id
     try:
-        user = None
-        for u in ram_conn.list_users():
-            if user_name and u.name != user_name:
-                continue
-            if user_id and u.user_id != user_id:
-                continue
-            user = u
-        return user
+        response = do_common_request(
+            ram_conn, "POST", "ascm", "2019-05-10", "ListUsers", "/ascm/auth/user/listUsers", body=params)
+        for user in response["data"]:
+            if user_name:
+                if user["loginName"] == user_name:
+                    return user
+            elif display_name:
+                if user["displayName"] == display_name:
+                    return user
+            elif user_id:
+                if user["primaryKey"] == user_id:
+                    return user
+            else:
+                pass
+
     except Exception as e:
-        module.fail_json(msg="Failed to describe Users: {0}".format(e))
+
+        return module.fail_json(msg="Failed to describe Users: {0}".format(e))
+
+
+def create_user(module, ram_conn):
+    params = {
+        "mobileNationCode": "86",
+        "loginPolicyId": "1",
+        "organizationId": module.params['apsarastack_department'],
+        "loginName": module.params["user_name"],
+        "displayName": module.params["display_name"],
+        "roleIdList": ["2"],
+        "cellphoneNum": module.params["mobile_phone"],
+        "email": module.params["email"],
+        "enableEmail": False,
+        "enableDingTalk": False
+    }
+    try:
+        do_common_request(
+            ram_conn, "POST", "ascm", "2019-05-10", "AddUser", "/ascm/auth/user/addUser", body=params)
+        return user_exists(module, ram_conn, user_name=module.params["user_name"])
+
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to create Users: {0}".format(e))
+
+
+def delete_user(module, ram_conn, login_name):
+    params = {
+        "loginName": login_name
+    }
+    try:
+        do_common_request(
+            ram_conn, "POST", "ascm", "2019-05-10", "RemoveUserByLoginName", "/ascm/auth/user/removeUserByLoginName", body=params)
+        do_common_request(
+            ram_conn, "POST", "ascm", "2019-05-10", "RemoveCompletelyUserByLoginName", "/ascm/auth/user/removeCompletelyUserByLoginName", body=params)
+        return user_exists(module, ram_conn, user_name=login_name)
+
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to describe Users: {0}".format(e))
+
+
+def modify_user(module, ram_conn):
+    params = {
+        "loginName": module.params['user_name'],
+        "primaryKey": module.params['user_id'],
+        "mobileNationCode": "86",
+        "displayName": module.params["display_name"],
+        "cellphoneNum": module.params["mobile_phone"],
+        "email": module.params["email"]
+    }
+    try:
+        do_common_request(
+            ram_conn, "POST", "ascm", "2019-05-10", "ModifyUserInformation", "/ascm/auth/user/modifyUserInformation", body=params)
+        return user_exists(module, ram_conn, user_name=module.params["user_name"])
+
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to modify Users: {0}".format(e))
 
 
 def main():
@@ -262,7 +282,7 @@ def main():
     if HAS_FOOTMARK is False:
         module.fail_json(msg='footmark required for this module.')
 
-    ram_conn = ram_connect( module)
+    ram_conn = ram_connect(module)
 
     # Get values of variable
     state = module.params['state']
@@ -271,27 +291,29 @@ def main():
     changed = False
 
     # Check if user exists
-    user = user_exists(module, ram_conn, user_name, user_id)
+    user = user_exists(module, ram_conn, user_name=user_name, user_id=user_id)
 
     if state == 'absent':
         if not user:
             module.exit_json(changed=changed, user={})
         try:
-            module.exit_json(changed=user.delete(), user={})
+            module.exit_json(changed=delete_user(
+                module, ram_conn, user["loginName"]), user={})
         except RAMResponseError as ex:
-            module.fail_json(msg='Unable to delete user {0}, error: {1}'.format(user_name, ex))
+            module.fail_json(
+                msg='Unable to delete user {0}, error: {1}'.format(user_name, ex))
 
     if not user:
         try:
-            user = ram_conn.create_user(**module.params)
-            module.exit_json(changed=True, user=user.read())
+            user = create_user(module, ram_conn)
+            module.exit_json(changed=True, user=user)
         except RAMResponseError as e:
             module.fail_json(msg='Unable to create user, error: {0}'.format(e))
 
     try:
-        res = user.update(**module.params)
+        res = modify_user(module, ram_conn)
         if res:
-            module.exit_json(changed=True, user=res.read())
+            module.exit_json(changed=True, user=res)
     except RAMResponseError as e:
         module.fail_json(msg='Unable to update user, error: {0}'.format(e))
 
