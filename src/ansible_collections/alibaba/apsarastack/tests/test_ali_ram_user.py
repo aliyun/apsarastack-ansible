@@ -6,6 +6,8 @@ Created on 2025年3月7日
 '''
 import unittest
 
+import sys
+sys.path.append(r"D:\code\apsarastack-ansible\src")
 
 from dotenv import load_dotenv
 
@@ -32,7 +34,7 @@ class Test(unittest.TestCase):
         self.assertEqual(result['user']["cellphoneNum"], ram_user_args["mobile_phone"])
         ram_user_args["user_id"] = result["user"]["primaryKey"]
         ram_user_args["display_name"] = "ansiable-test-change"
-        ram_user_args["mobile_phone"] = "151222222222"
+        ram_user_args["mobile_phone"] = "15122222222"
         result = run_module(ram_user_main, ram_user_args)
         self.assertEqual(result['user']["displayName"], ram_user_args["display_name"])
         self.assertEqual(result['user']["cellphoneNum"], ram_user_args["mobile_phone"])
