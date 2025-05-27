@@ -131,7 +131,7 @@ user:
             type: str
             sample: ECSAdmin
 '''
-
+import json
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ram_connect, do_common_request
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
@@ -149,8 +149,8 @@ def role_exists(module, ram_conn, role_name, role_id=None):
     if role_id:
         return True
     params = {
-        "roleName": role_name,
-        "roleType" : "ROLETYPE_ASCM"
+        "roleName": role_name
+        # "roleType" : "ROLETYPE_ASCM"
     }
     try:
         response = do_common_request(
@@ -169,6 +169,8 @@ def create_role(module, ram_conn):
         "roleName": module.params['role_name'],
         "description": module.params['description'],
     }
+    if module.params.get("assumerole_policydocument"):
+        params["assumeRolePolicyDocument"] = json.dumps(module.params.get("assumerole_policydocument"))
     try:
         do_common_request(ram_conn, "POST", "ascm", "2019-05-10", "CreateRole", "/ascm/auth/role/createRole", body=params)
         return role_exists(module, ram_conn, module.params['role_name'])
@@ -215,6 +217,7 @@ def main():
         assume_role_policy_document=dict(type='str', aliases=['policy']),
         description=dict(type='str'),
         role_range=dict(type='str'),
+        assumerole_policydocument=dict(type='dict'),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)
