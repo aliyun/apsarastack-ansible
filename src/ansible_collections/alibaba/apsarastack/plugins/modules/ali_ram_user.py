@@ -205,7 +205,6 @@ def user_exists(module, ram_conn, user_name=None, display_name=None, user_id=Non
 
         return module.fail_json(msg="Failed to describe Users: {0}".format(e))
 
-
 def create_user(module, ram_conn):
     params = {
         "mobileNationCode": "86",
@@ -213,12 +212,13 @@ def create_user(module, ram_conn):
         "organizationId": module.params['apsarastack_department'],
         "loginName": module.params["user_name"],
         "displayName": module.params["display_name"],
-        "roleIdList": ["2"],
         "cellphoneNum": module.params["mobile_phone"],
         "email": module.params["email"],
         "enableEmail": False,
         "enableDingTalk": False
     }
+    if module.params.get("role_ids"):
+        params["roleIdList"] = module.params["role_ids"]
     try:
         do_common_request(
             ram_conn, "POST", "ascm", "2019-05-10", "AddUser", "/ascm/auth/user/addUser", body=params)
@@ -226,7 +226,7 @@ def create_user(module, ram_conn):
 
     except Exception as e:
 
-        return module.fail_json(msg="Failed to create Users: {0}".format(e))
+        return module.fail_json(msg="Failed to create_user: {0}".format(e))
 
 
 def delete_user(module, ram_conn, login_name):
@@ -274,7 +274,8 @@ def main():
         mobile_phone=dict(type='str', aliases=['phone']),
         email=dict(type='str'),
         comments=dict(type='str'),
-        new_user_name=dict(type='str')
+        new_user_name=dict(type='str'),
+        role_ids=dict(type='list'),
     ))
 
     module = AnsibleModule(argument_spec=argument_spec)

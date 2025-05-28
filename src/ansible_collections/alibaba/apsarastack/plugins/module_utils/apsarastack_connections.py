@@ -42,6 +42,7 @@ APSARASTACK_ENDPOINTS = {
     "ascm": ("ascm.%(domain)s", "ascm.%(region)s.%(domain)s",),
     "ess": ("ess.%(domain)s", "ess.%(region)s.%(domain)s",),
     "ram": ("ascm.%(domain)s", "ascm.%(region)s.%(domain)s",),
+    "oss": ("occ.%(domain)s", "occ.%(region)s.%(domain)s",)
     }
 
 
@@ -206,7 +207,7 @@ def connect_to_universal(popcode, modules_params:dict, **params):
     return conn
 
 
-def do_common_request(conn, method:str, popcode: str, version:str, api_name:str, pattern:str="", headers:dict={}, query:dict={}, body:dict=None) -> dict:
+def do_common_request(conn, method:str, popcode: str, version:str, api_name:str, pattern:str="", headers:dict={}, query:dict={}, body:dict=None, data:dict=None) -> dict:
     if not conn.security_token: 
         credentials = AccessKeyCredential(conn.acs_access_key_id, conn.acs_secret_access_key)
     else:
@@ -221,9 +222,6 @@ def do_common_request(conn, method:str, popcode: str, version:str, api_name:str,
     request.set_action_name(api_name)
     if pattern:
         request.set_uri_pattern(pattern)
-        request.add_header("x-acs-asapi-product", popcode)
-        request.add_header("x-ascm-product-name", popcode)
-        request.add_header("RegionId", conn.region)
     # 云产品的Endpoint地址
     request.set_domain(conn._endpoint)
     request.set_endpoint(conn._endpoint)
@@ -250,11 +248,13 @@ def do_common_request(conn, method:str, popcode: str, version:str, api_name:str,
     
     if query:
         request.set_query_params(query)
-
     if body:
         request.set_content_type('application/x-www-form-urlencoded')
         
         request.set_body_params(body)
+    if data:
+        request.set_content_type('application/json')
+        request.set_content(data)
     
     response = client.do_action_with_exception(request)
     
