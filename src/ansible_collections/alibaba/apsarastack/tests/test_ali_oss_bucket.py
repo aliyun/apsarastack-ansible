@@ -5,8 +5,7 @@ Created on 2025年3月7日
 @author: jingyu.wy
 '''
 import unittest
-import sys
-sys.path.append(r"D:\code\apsarastack-ansible\src")
+
 from dotenv import load_dotenv
 
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
@@ -25,7 +24,15 @@ class Test(unittest.TestCase):
             "bucket_name": 'test-bucket',
         }
         result = run_module(oss_bucket_main, bucket_args)
-        print(result)
+        self.assertEqual(result['bucket']["Name"], bucket_args["bucket_name"])
+        bucket_args = {
+            "state": "absent",
+            "permission": "private",
+            "bucket_name": 'test-bucket',
+        }
+        result = run_module(oss_bucket_main, bucket_args)
+        self.assertNotIn('failed', result)
+        self.assertTrue(result["changed"])
 
 
 if __name__ == "__main__":

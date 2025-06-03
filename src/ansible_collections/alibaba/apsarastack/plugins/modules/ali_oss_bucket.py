@@ -143,7 +143,8 @@ buckets:
 # import module snippets
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ossbucket_connect, ossservice_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ossbucket_connect, ossservice_connect, do_asapi_common_request
+import json
 
 HAS_FOOTMARK = False
 
@@ -154,8 +155,116 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_bucket(bucket):
-    return {'id': bucket.id, 'name': bucket.name, 'permission': bucket.acl, 'location': bucket.location}
+def get_bucket(module, oss_conn):
+    params = {
+        "OpenApiAction": "GetBucketInfo",
+        "ProductName": "oss"
+    }
+    query = {
+            "BucketName": module.params['bucket_name']
+        }
+    query["Params"] = json.dumps(params)
+    try:
+        response = do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=params)
+        module.fail_json(msg=response)
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to get_bucket: {0}".format(e))
+
+def exist_bucket(module, oss_conn):
+    params = {
+        "OpenApiAction": "GetService",
+        "ProductName": "oss"
+    }
+    try:
+        response = do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=params)
+        buckets = response["Data"]["ListAllMyBucketsResult"]["Buckets"]["Bucket"]
+        for bucket in buckets:
+            if bucket['Name'] == module.params['bucket_name']:
+                return bucket
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to exist_bucket: {0}".format(e))
+    
+def put_acl(module, oss_conn):
+    params = {
+        "BucketName":module.params['bucket_name'],
+        "x-oss-acl":module.params['permission']
+        }
+    query = {
+        "OpenApiAction": "PutBucketACL",
+        "ProductName": "oss"
+    }
+    query["Params"] = json.dumps(params)
+    try:
+        response = do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=query)
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to put_acl: {0}".format(e))
+    
+
+def get_acl(module, oss_conn):
+    params = {
+        "BucketName":module.params['bucket_name'],
+        "acl":"acl"
+        }
+    query = {
+        "OpenApiAction": "GetBucketAcl",
+        "ProductName": "oss"
+    }
+    query["Params"] = json.dumps(params)
+    try:
+        response = do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=query)
+        return response["data"]
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to get_acl: {0}".format(e))
+    
+
+def create_bucket(module, oss_conn):
+    params = {
+        "BucketName":module.params['bucket_name']
+        }
+    if module.params.get('permission'):
+        params["x-oss-acl"] = module.params['permission']
+    query = {
+        "OpenApiAction": "PutBucket",
+        "ProductName": "oss"
+    }
+    query["Params"] = json.dumps(params)
+    try:
+        do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=query)
+        return exist_bucket(module, oss_conn)
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to create_bucket: {0}".format(e))
+    
+
+def delete_bucket(module, oss_conn):
+
+    params = {
+        "BucketName":module.params['bucket_name']
+        }
+    if module.params.get('permission'):
+        params["x-oss-acl"] = module.params['permission']
+    query = {
+        "OpenApiAction": "DeleteBucket",
+        "ProductName": "oss"
+    }
+    query["Params"] = json.dumps(params)
+    try:
+        cc = do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=query)
+        return exist_bucket(module, oss_conn)
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to delete_bucket: {0}".format(e))
+
 
 
 def main():
@@ -174,21 +283,22 @@ def main():
 
     state = module.params['state']
     permission = module.params['permission']
-    oss_bucket = ossbucket_connect(module)
+    oss_conn = ossbucket_connect(module)
+    oss_service_conn = ossservice_connect(module)
 
     if state == 'present':
         try:
-            if oss_bucket.bucket_exists():
-                result = oss_bucket.put_acl(permission=permission)
+            if exist_bucket(module, oss_conn):
+                result = put_acl(module, oss_conn)  
             else:
-                result = oss_bucket.create(permission=permission)
-            module.exit_json(changed=True, bucket=get_bucket(result))
+                result = create_bucket(module, oss_conn)
+            module.exit_json(changed=True, bucket=exist_bucket(module, oss_conn))
         except Exception as e:
             module.fail_json(msg="Unable to put bucket or set acl for it, and got an error: {0}.".format(e))
 
     elif state == 'absent':
         try:
-            oss_bucket.delete()
+            delete_bucket(module, oss_conn)
             module.exit_json(changed=True)
         except Exception as e:
             module.fail_json(msg="Unable to delete bucket, and got an error: {0}.".format(e))
@@ -200,8 +310,8 @@ def main():
 
             buckets = []
             for name in keys:
-                module.params['bucket'] = name
-                buckets.append(get_bucket(ossbucket_connect(module)))
+                module.params['bucket_name'] = name
+                buckets.append(exist_bucket(module, oss_conn))
 
             module.exit_json(changed=False, buckets=buckets)
         except Exception as e:

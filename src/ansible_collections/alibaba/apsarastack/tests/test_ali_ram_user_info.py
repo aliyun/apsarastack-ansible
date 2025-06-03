@@ -7,7 +7,6 @@ Created on 2025年3月7日
 import unittest
 
 from dotenv import load_dotenv
-
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_ram_user import main as ram_user_main
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_ram_user_info import main as ram_user_info_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage

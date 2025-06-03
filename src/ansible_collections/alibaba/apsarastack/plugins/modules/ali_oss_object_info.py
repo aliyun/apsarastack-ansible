@@ -122,8 +122,9 @@ total:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ossbucket_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ossbucket_connect, do_asapi_common_request
 import time
+import json
 
 HAS_FOOTMARK = False
 
@@ -134,20 +135,28 @@ except ImportError:
     HAS_FOOTMARK = False
 
 
-def get_info(obj):
-    result = {
-        'key': obj.key,
-        'last_modified': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(obj.last_modified)),
-        'etag': obj.etag,
-        'type': obj.type,
-        'size': str(obj.size) + ' B',
-        'storage_class': obj.storage_class
+def list_objects(module, oss_conn, max_keys=None):
+    params = {
+        "BucketName":module.params['bucket'],
+        "delimiter": "/",
+        "encoding-type": "url"
+        }
+    if module.params.get('object'):
+        params["prefix"] = module.params['object']
+    if max_keys:
+        params["max-keys"] = max_keys
+    query = {
+        "OpenApiAction": "GetBucket",
+        "ProductName": "oss"
     }
+    query["Params"] = json.dumps(params)
+    try:
+        response = do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=query)
+        return response
+    except Exception as e:
 
-    if obj.type == 'Appendable':
-        result['next_append_position'] = obj.size
-
-    return result
+        return module.fail_json(msg="Failed to list_objects: {0}".format(e))
 
 
 def main():
@@ -168,16 +177,9 @@ def main():
 
     try:
         oss_bucket = ossbucket_connect(module)
-
-        while True:
-            results = oss_bucket.list_objects(prefix=object_key, max_keys=max_keys)
-            for obj in results:
-                objects.append(get_info(obj))
-                object_names.append(obj.key)
-
-            if len(results) < max_keys:
-                break
-        module.exit_json(changed=False, object_names=object_names, objects=objects, total=len(objects))
+        results = list_objects(module, oss_bucket)
+    
+        module.exit_json(changed=False, object_names=object_names, objects=results, total=len(objects))
     except Exception as e:
         module.fail_json(msg="Unable to describe bucket objects, and got an error: {0}".format(e))
 

@@ -50,4 +50,10 @@ def common_argument_spec():
         apsarastack_insecure=dict(
             aliases=['insecure'], fallback=(env_fallback, ['APSARASTACK_INSECURE']), default=False
         ),
+        apsarastack_asapi_endpoint=dict(
+                    aliases=['asapi_endpoint'], fallback=(env_fallback, ['APSARASTACK_ASAPI_ENDPOINT']), default=""
+                ),
+        apsarastack_ossservice_endpoint=dict(
+                    aliases=['ossservice_endpoint'], fallback=(env_fallback, ['APSARASTACK_OSS_SERVICE_ENDPOINT']), default=False
+                ),
     )

@@ -117,7 +117,7 @@ total:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ossbucket_connect, ossservice_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ossbucket_connect, ossservice_connect, do_asapi_common_request
 
 HAS_FOOTMARK = False
 
@@ -136,6 +136,20 @@ def get_info(bucket):
         'location': bucket.location
     }
 
+def list_buckets(module, oss_conn):
+    params = {
+        "OpenApiAction": "GetService",
+        "ProductName": "oss"
+    }
+    try:
+        response = do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=params)
+        buckets = response["Data"]["ListAllMyBucketsResult"]["Buckets"]["Bucket"]
+        return buckets
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to exist_bucket: {0}".format(e))
+
 
 def main():
     argument_spec = common_argument_spec()
@@ -149,20 +163,20 @@ def main():
 
     if HAS_FOOTMARK is False:
         module.fail_json(msg="Package 'footmark' required for this module.")
+    oss_conn = ossbucket_connect(module)
+    bucket_prefix = module.params['bucket_prefix']
 
     try:
-        oss_service = ossservice_connect(module)
-        keys = oss_service.list_buckets(prefix=module.params['bucket_prefix'], max_keys=200)
-
-        buckets = []
+        buckets_all = list_buckets(module, oss_conn)
+        filter_buckets = []
         bucket_names = []
-        for name in keys:
-            module.params['bucket'] = name
-            bucket = ossbucket_connect(module)
-            buckets.append(get_info(bucket))
-            bucket_names.append(bucket.name)
+        for bucket in buckets_all:
+            if bucket["Name"].startswith(bucket_prefix):
+                filter_buckets.append(bucket)
+                bucket_names.append(bucket["Name"])
 
-        module.exit_json(changed=False, bucket_names=bucket_names, buckets=buckets, total=len(buckets))
+
+        module.exit_json(changed=False, bucket_names=bucket_names, buckets=filter_buckets, total=len(filter_buckets))
     except Exception as e:
         module.fail_json(msg="Unable to describe buckets, and got an error: {0}.".format(e))
 

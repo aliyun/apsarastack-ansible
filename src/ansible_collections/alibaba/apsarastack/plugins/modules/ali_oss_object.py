@@ -266,8 +266,10 @@ objects:
 # import module snippets
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_common import common_argument_spec
-from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ossbucket_connect
+from ansible_collections.alibaba.apsarastack.plugins.module_utils.apsarastack_connections import ossbucket_connect, ossbucket_object_conn, do_asapi_common_request, ossservice_connect
 import time
+import json
+import oss2
 
 HAS_FOOTMARK = False
 
@@ -277,15 +279,103 @@ try:
 except ImportError:
     HAS_FOOTMARK = False
 
+def put_bucket_object(module, oss_conn):
+    params = {
+        "BucketName":module.params['bucket'],
+        "ObjectName": module.params['object']
+        }
+    query = {
+        "OpenApiAction": "PutObject",
+        "ProductName": "oss"
+    }
+    query["Params"] = json.dumps(params)
+    try:
+        do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=query)
+        return is_object_exist(module, oss_conn)
+    except Exception as e:
 
-def get_object_info(obj):
-    result = {'key': obj.key, 'last_modified': time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(obj.last_modified)),
-              'etag': obj.etag, 'type': obj.type, 'size': str(obj.size) + ' B', 'storage_class': obj.storage_class}
+        return module.fail_json(msg="Failed to create_bucket: {0}".format(e))
+    
 
-    if obj.type == 'Appendable':
-        result['next_append_position'] = obj.size
+def is_object_exist(module, oss_conn, max_keys=None):
+    params = {
+        "BucketName":module.params['bucket'],
+        "delimiter": "/",
+        "encoding-type": "url"
+        }
+    if module.params.get('object'):
+        params["prefix"] = module.params['object']
+    if max_keys:
+        params["max-keys"] = max_keys
+    query = {
+        "OpenApiAction": "GetBucket",
+        "ProductName": "oss"
+    }
+    query["Params"] = json.dumps(params)
+    try:
+        response = do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=query)
+        if "Contents" in response["Data"]["ListBucketResult"]:
+            return response["Data"]["ListBucketResult"]["Contents"]
+    except Exception as e:
 
-    return result
+        return module.fail_json(msg="Failed to create_bucket: {0}".format(e))
+    
+
+def put_object_acl(module, oss_conn):
+    params = {
+        "BucketName":module.params['bucket'],
+        "ObjectName": module.params['object'],
+        "x-oss-object-acl": module.params['permission']
+        }
+    query = {
+        "OpenApiAction": "PutObjectACL",
+        "ProductName": "oss"
+    }
+    query["Params"] = json.dumps(params)
+    try:
+        do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=query)
+    except Exception as e:
+
+        return module.fail_json(msg="Failed to put_object_acl: {0}".format(e))
+
+def delete_object(module, oss_conn):
+    try:
+      auth = oss2.Auth(oss_conn.acs_access_key_id, oss_conn.acs_secret_access_key)
+      bucket = oss2.Bucket(auth, oss_conn._endpoint, module.params['bucket'])
+      bucket.batch_delete_objects([module.params['object']])
+    except Exception as e:
+      module.fail_json(msg="Failed to delete_object: {0}".format(e))
+
+def put_object_from_file(module, oss_conn):
+    try:
+      auth = oss2.Auth(oss_conn.acs_access_key_id, oss_conn.acs_secret_access_key)
+      bucket = oss2.Bucket(auth, oss_conn._endpoint, module.params['bucket'])
+      remote_file = module.params['object'] + module.params['file_name']
+      bucket.put_object_from_file(remote_file, module.params['file_name'])
+    except Exception as e:
+      module.fail_json(msg="Failed to put_object_from_file: {0}".format(e))
+
+
+def get_object_acl(module, oss_conn):
+    params = {
+        "BucketName":module.params['bucket'],
+        "ObjectName": module.params['object']
+        }
+    query = {
+        "OpenApiAction": "GetObjectACL",
+        "ProductName": "oss"
+    }
+    query["Params"] = json.dumps(params)
+    try:
+        response = do_asapi_common_request(
+            oss_conn, "POST", "OneRouter", "2018-12-12", "DoOpenApi", query=query)
+        return response["Data"]["AccessControlPolicy"]["AccessControlList"]["Grant"]
+    except Exception as e:
+        module.fail_json(msg="Failed to get_object_acl: {0}".format(e))
+    
 
 
 def main():
@@ -299,7 +389,7 @@ def main():
         content=dict(type='str'),
         file_name=dict(type='str', aliases=['file']),
         object=dict(type='str', aliases=['key', 'object_name']),
-        byte_range=dict(type='str', aliases=['range'])
+        byte_range=dict(type='str', aliases=['range']),
     )
     )
     module = AnsibleModule(argument_spec=argument_spec)
@@ -307,13 +397,14 @@ def main():
     if HAS_FOOTMARK is False:
         module.fail_json(msg="Package 'footmark' required for the module ali_oss_object.")
 
-    oss_bucket = ossbucket_connect(module)
+    oss_conn = ossbucket_connect(module)
+    oss_service_conn = ossservice_connect(module)
     mode = module.params['mode']
     file_name = module.params['file_name']
     object_key = module.params['object']
     headers = module.params['headers']
 
-    changed = False
+    changed = True
 
     if mode == 'put':
         content = module.params['content']
@@ -324,53 +415,53 @@ def main():
         permission = module.params['permission']
 
         try:
-            if content:
-                oss_bucket.put_object(object_key, content, overwrite, headers=headers)
-                changed = True
+            bucket_object = is_object_exist(module, oss_conn)
+            if not bucket_object:
+                bucket_object = put_bucket_object(module, oss_conn)
+                changed = False
             elif file_name:
-                oss_bucket.put_object_from_file(object_key, file_name, overwrite, headers=headers)
+                put_object_from_file(module, oss_service_conn)
                 changed = True
-            elif oss_bucket.is_object_exist(object_key):
-                if permission:
-                    oss_bucket.put_object_acl(object_key, permission)
-                    changed = True
-                if headers:
-                    oss_bucket.update_object_headers(object_key, headers)
-                    changed = True
-            module.exit_json(changed=changed, key=object_key, object=get_object_info(oss_bucket.get_object_info(object_key)))
+            if permission and changed and not module.params['object'].endswith('/'):
+                put_object_acl(module, oss_conn)
+                changed = get_object_acl(module, oss_conn)
+                # changed = True
+            # if headers:
+            #     oss_bucket.update_object_headers(object_key, headers)
+                # changed = True
+            module.exit_json(changed=changed, key=object_key, object=bucket_object)
         except Exception as e:
             module.fail_json(msg="Unable to upload an object {0} or "
                                  "modify its permission and headers, and got an error: {1}".format(object_key, e))
 
     elif mode == 'get':
-        byte_range = module.params['byte_range']
-        try:
-            if file_name:
-                oss_bucket.get_object_to_file(object_key, file_name, byte_range=byte_range, headers=headers)
-            else:
-                module.fail_json(msg="'file_name' must be specified when mode is get.")
-            module.exit_json(changed=changed, key=object_key, object=get_object_info(oss_bucket.get_object_info(object_key)))
-        except Exception as e:
-            module.fail_json(msg="Unable to download object {0}, and got an error: {1}".format(object_key, e))
+        pass
+        # byte_range = module.params['byte_range']
+        # try:
+        #     if file_name:
+        #         oss_bucket.get_object_to_file(object_key, file_name, byte_range=byte_range, headers=headers)
+        #     else:
+        #         module.fail_json(msg="'file_name' must be specified when mode is get.")
+        #     module.exit_json(changed=changed, key=object_key, object=get_object_info(oss_bucket.get_object_info(object_key)))
+        # except Exception as e:
+        #     module.fail_json(msg="Unable to download object {0}, and got an error: {1}".format(object_key, e))
 
     elif mode == 'list':
         objects = []
         max_keys = 500
         try:
             while True:
-                results = oss_bucket.list_objects(prefix=object_key, max_keys=max_keys)
-                for obj in results:
-                    objects.append(get_object_info(obj))
+                results = is_object_exist(module, oss_conn, max_keys)
 
                 if len(results) < max_keys:
                     break
-            module.exit_json(changed=False, objects=objects)
+            module.exit_json(changed=False, objects=results)
         except Exception as e:
             module.fail_json(msg="Unable to retrieve all objects, and got an error: {0}".format(e))
 
     else:
         try:
-            oss_bucket.delete_object(object_key)
+            delete_object(module, oss_service_conn)
             module.exit_json(changed=changed, key=object_key)
         except Exception as e:
             module.fail_json(msg="Unable to delete an object {0}, and got an error: {1}".format(object_key, e))

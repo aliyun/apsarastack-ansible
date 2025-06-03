@@ -4,12 +4,12 @@ Created on 2025年3月7日
 
 @author: jingyu.wy
 '''
+
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_ram_role import main as ram_role_main
 from ansible_collections.alibaba.apsarastack.tests.test_utils import run_module, run_unittest_with_coverage
 from ansible_collections.alibaba.apsarastack.plugins.modules.ali_ram_policy import main as ram_policy_main
 from dotenv import load_dotenv
 import unittest
-
 
 class Test(unittest.TestCase):
 

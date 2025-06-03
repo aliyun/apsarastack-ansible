@@ -6,8 +6,7 @@ Created on 2025年3月7日
 '''
 import unittest
 
-import sys
-sys.path.append(r"D:\code\apsarastack-ansible\src")
+
 
 from dotenv import load_dotenv
 
