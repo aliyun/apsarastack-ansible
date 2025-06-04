@@ -8,6 +8,11 @@ This collection requires Python 3.6 or greater.
 ## Installing this collection
 
 You can install the Aliyun ApsaraStack collection with the Ansible Galaxy CLI:
+``` shell
+ansible-galaxy collection install alibaba.apsarastack
+```
+
+also you can also install it through source code:
 
 1. create a `requirements.txt` file with the following:
    ```yaml
@@ -20,6 +25,7 @@ You can install the Aliyun ApsaraStack collection with the Ansible Galaxy CLI:
    ```shell
    ansible-galaxy collection install -r requirements.txt
    ```
+
    
 > The python module dependencies are not installed by `ansible-galaxy`.  They can
 be manually installed using pip:
