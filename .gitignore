@@ -10,3 +10,5 @@ src/ansible_collections/alibaba/apsarastack/tests/.coverage
 src/ansible_collections/alibaba/apsarastack/tests/htmlcov
 
 dist
+
+src/ansible_collections/alibaba/apsarastack/*.tar.gz

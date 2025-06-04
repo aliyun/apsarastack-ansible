@@ -5,9 +5,7 @@ readme: README.md
 authors:
 - Wangyu (@zshongyi)
 description: Alibaba Cloud
-license:
-- GPL-3.0-or-later
-license_file: COPYING
+license_file: LICENSE
 tags: [alibaba, apsarastack, aliyun, cloud]
 #dependencies:
 #  ansible.netcommon: '>=0.0.1'
