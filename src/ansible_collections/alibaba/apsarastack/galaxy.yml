@@ -9,8 +9,8 @@ license:
 - GPL-3.0-or-later
 license_file: COPYING
 tags: [alibaba, apsarastack, aliyun, cloud]
-dependencies:
-  ansible.netcommon: '>=0.0.1'
+#dependencies:
+#  ansible.netcommon: '>=0.0.1'
 repository: https://github.com/alibaba/ansible.apsarastack.git
 homepage: https://github.com/alibaba/ansible.apsarastack
 issues: https://github.com/alibaba/ansible.apsarastack/issues
