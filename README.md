@@ -67,15 +67,62 @@ You can either call modules by their Fully Qualified Collection Namespace (FQCN)
 ## plugins/modules
 There are several files in the module directory, and these files describe some function that can operate apsarastack products.
 
-- `ali_instance.py`: Create, Start, Stop, Restart or Terminate an Instance in ECS. Add or Remove Instance to/from a Security Group
-- `ali_disk.py`: Create, Attach, Detach or Delete a disk in ECS
-- `ali_security_group.py`: Create or Delete a Security Group
-- `ali_vpc.py`: Create or Delete a Vpc.
-- `ali_vswitch.py`: Create or Delete a VSwitch.
-- `ali_route_entry.py`: Create or Delete a route entry.
-- `ali_slb_lb.py`: Create or Delete a Load balancer.
-- `ali_slb_listener.py`: Create or Delete a listener for one Load balancer.
-- `ali_slb_server.py`: Add or Remove backend server to/from Load balancer.
+- `ali_disk.py`: Create, Attach, Detach, or Delete a disk in ECS  
+- `ali_disk_info.py`: Query information about a disk in ECS  
+- `ali_vpc.py`: Create or Delete a VPC  
+- `ali_vpc_info.py`: Query information about a VPC  
+- `ali_vswitch.py`: Create or Delete a VSwitch  
+- `ali_vswitch_info.py`: Query information about a VSwitch  
+- `ali_dns_domain.py`: Create, Delete, or Update a DNS domain  
+- `ali_dns_domain_info.py`: Query information about a DNS domain  
+- `ali_ecs_tag.py`: Manage tags for ECS instances and disks (Create, Delete, Update, or Query)  
+- `ali_eip.py`: Allocate or Release an Elastic IP address  
+- `ali_eip_info.py`: Query information about an Elastic IP address  
+- `ali_image.py`: Create or Delete a custom image  
+- `ali_image_info.py`: Query information about an image  
+- `ali_instance.py`: Create, Start, Stop, Restart, or Terminate an ECS instance  
+- `ali_instance_info.py`: Query information about an ECS instance  
+- `ali_instance_type_facts.py`: Query available ECS instance types  
+- `ali_rds_account.py`: Create or Delete an RDS account  
+- `ali_rds_account_info.py`: Query information about an RDS account  
+- `ali_rds_backup.py`: Create or Delete an RDS backup  
+- `ali_rds_backup_info.py`: Query information about an RDS backup  
+- `ali_rds_database.py`: Create or Delete an RDS database  
+- `ali_rds_database_info.py`: Query information about an RDS database  
+- `ali_rds_instance.py`: Create or Delete an RDS instance  
+- `ali_rds_instance_info.py`: Query information about an RDS instance  
+- `ali_route_entry.py`: Add or Remove a route entry  
+- `ali_route_entry_info.py`: Query information about a route entry  
+- `ali_security_group.py`: Create or Delete a Security Group  
+- `ali_security_group_info.py`: Query information about a Security Group  
+- `ali_slb_lb.py`: Create or Delete a Load Balancer  
+- `ali_slb_lb_info.py`: Query information about a Load Balancer  
+- `ali_slb_listener.py`: Create or Delete a Load Balancer listener  
+- `ali_slb_listener_info.py`: Query information about a Load Balancer listener  
+- `ali_slb_server.py`: Add or Remove backend servers from a Load Balancer  
+- `ali_slb_server_info.py`: Query backend servers of a Load Balancer  
+- `ali_slb_tag.py`: Manage tags for a Load Balancer (Create, Delete, Update, or Query)  
+- `ali_slb_vsg.py`: Create or Delete a Virtual Server Group for a Load Balancer  
+- `ali_slb_vsg_info.py`: Query information about a Virtual Server Group  
+- `ali_ess_instance.py`: Create or Delete an Auto Scaling instance  
+- `ali_ess_configuration.py`: Create or Delete an Auto Scaling configuration  
+- `ali_ess_group.py`: Create or Delete an Auto Scaling group  
+- `ali_ess_rule.py`: Create or Delete an Auto Scaling rule  
+- `ali_ess_task.py`: Query or Manage Auto Scaling tasks  
+- `ali_ram_group.py`: Create or Delete a RAM group  
+- `ali_ram_group_info.py`: Query information about a RAM group  
+- `ali_ram_login_profile_info.py`: Query login profile details for a RAM user  
+- `ali_ram_login_profile.py`: Create or Delete a RAM login profile  
+- `ali_ram_policy_info.py`: Query information about a RAM policy  
+- `ali_ram_policy.py`: Create or Delete a RAM policy  
+- `ali_ram_role_info.py`: Query information about a RAM role  
+- `ali_ram_role.py`: Create or Delete a RAM role  
+- `ali_ram_user_info.py`: Query information about a RAM user  
+- `ali_ram_user.py`: Create or Delete a RAM user  
+- `ali_oss_bucket_info.py`: Query information about an OSS bucket  
+- `ali_oss_bucket.py`: Create or Delete an OSS bucket  
+- `ali_oss_object_info.py`: Query information about an OSS object  
+- `ali_oss_object.py`: Upload, Delete, or Manage an OSS object  
 
 ## lib/ansible/module_utils
 In the module utils directory, the file apsarastack_ecs.py identifies and gains playbook params, and provides this params to modules/*.py. In addition, this file implements connection between ansible and Apsarastack API via footmark.
